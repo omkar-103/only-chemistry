@@ -18,6 +18,8 @@ interface SecurityState {
   fullscreenExitCount:  number;
   isFullscreen:         boolean;
   totalViolations:      number;
+  sidePanelCount:       number;
+  blurCount:            number;
 }
 
 export function useExamSecurity({
@@ -31,12 +33,22 @@ export function useExamSecurity({
     fullscreenExitCount: 0,
     isFullscreen:        typeof document !== "undefined" ? !!document.fullscreenElement : false,
     totalViolations:     0,
+    sidePanelCount:      0,
+    blurCount:           0,
   });
 
   const tabSwitchRef       = useRef(0);
   const fullscreenRef      = useRef(0);
+  const sidePanelRef       = useRef(0);
+  const blurRef            = useRef(0);
   const isSubmittingRef    = useRef(false);
   const lastFSExitTime     = useRef(0); // debounce rapid duplicate events
+  // Baseline viewport width recorded when the exam starts.
+  // The Chrome Gemini side panel shrinks window.innerWidth by ~350-450px.
+  // NOTE: Chrome does NOT expose a side-panel API to web pages.
+  // The resize heuristic is the best available browser-level detection.
+  const baselineWidthRef   = useRef<number>(typeof window !== "undefined" ? window.innerWidth : 1280);
+  const lastBlurTime       = useRef(0); // debounce blur events
 
   // ── Log violation to server ─────────────────────────────────
   const logViolation = useCallback(async (type: string) => {
@@ -238,12 +250,102 @@ export function useExamSecurity({
     return () => window.removeEventListener("offline", handleOffline);
   }, [examId, logViolation]);
 
+  // ── Viewport Width Shrink (Gemini/AI Side Panel Detection) ──
+  //
+  // Chrome's Gemini side panel reduces window.innerWidth by ~350-450px.
+  // We detect any shrink > 200px from the recorded baseline as a potential
+  // side-panel open event.
+  //
+  // LIMITATION: This is a heuristic. It cannot definitively identify
+  // which tool caused the resize. A student with a narrow monitor or
+  // manual resize could trigger a false positive. It CANNOT be blocked;
+  // only detected and warned about.
+  useEffect(() => {
+    if (!examId) return;
+
+    // Capture baseline when the effect runs (exam is active)
+    baselineWidthRef.current = window.innerWidth;
+
+    const handleResize = async () => {
+      if (isSubmittingRef.current) return;
+      const shrink = baselineWidthRef.current - window.innerWidth;
+      // Side panel opens cause a sudden shrink > 200px
+      if (shrink > 200) {
+        sidePanelRef.current += 1;
+        const count = sidePanelRef.current;
+
+        setSecurityState(prev => ({
+          ...prev,
+          sidePanelCount:  count,
+          totalViolations: prev.totalViolations + 1,
+        }));
+
+        await logViolation("side_panel");
+
+        onViolation(
+          "side_panel",
+          count,
+          `⚠ AI/browser side panel detected (violation ${count}). Close all side panels and keep the exam window maximised.`,
+        );
+      } else {
+        // Width restored — update baseline
+        baselineWidthRef.current = Math.max(baselineWidthRef.current, window.innerWidth);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [examId, logViolation, onViolation]);
+
+  // ── Window Blur (focus lost to side panel or other apps) ────
+  //
+  // When a student clicks inside the Gemini side panel, the window may
+  // momentarily lose focus. This is a secondary, unreliable signal but
+  // adds depth to the detection when combined with the resize heuristic.
+  //
+  // LIMITATION: System notifications, OS popups, and screen-savers can
+  // also trigger blur. Treat as informational, not auto-submit.
+  useEffect(() => {
+    if (!examId) return;
+
+    const handleBlur = async () => {
+      if (isSubmittingRef.current) return;
+
+      // Debounce — ignore events within 1s of the last one
+      const now = Date.now();
+      if (now - lastBlurTime.current < 1000) return;
+      lastBlurTime.current = now;
+
+      blurRef.current += 1;
+      const count = blurRef.current;
+
+      setSecurityState(prev => ({
+        ...prev,
+        blurCount:       count,
+        totalViolations: prev.totalViolations + 1,
+      }));
+
+      await logViolation("blur");
+
+      onViolation(
+        "blur",
+        count,
+        `⚠ Exam window lost focus (${count} time${count > 1 ? "s" : ""}). Stay on the exam window.`,
+      );
+    };
+
+    window.addEventListener("blur", handleBlur);
+    return () => window.removeEventListener("blur", handleBlur);
+  }, [examId, logViolation, onViolation]);
+
   return {
     securityState,
     requestFullscreen,
     exitFullscreen,
     tabSwitchRef,
     fullscreenRef,
+    sidePanelRef,
+    blurRef,
     isSubmittingRef,
   };
 }

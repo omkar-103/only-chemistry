@@ -60,6 +60,7 @@ export default function ExamInstructionsPage({ params }: Params) {
     { icon: <RefreshCw className="h-5 w-5" />, title: "No Page Refresh", desc: "Do not refresh or reload the page during the exam. Your progress is auto-saved." },
     { icon: <Copy className="h-5 w-5" />, title: "No Copy/Paste", desc: "Copy, paste, right-click, and keyboard shortcuts are disabled during the exam." },
     { icon: <EyeOff className="h-5 w-5" />, title: "No Developer Tools", desc: "Opening browser developer tools is monitored and will trigger violations." },
+    { icon: <AlertTriangle className="h-5 w-5 text-amber-500" />, title: "No AI Assistants or Side Panels", desc: "Browser AI tools (e.g., Chrome Gemini, Microsoft Copilot) and side panels are strictly prohibited. Opening a side panel is detected and logged as a violation." },
     { icon: <AlertTriangle className="h-5 w-5" />, title: "Auto-Submission", desc: "The exam will auto-submit when time expires or after repeated violations." },
   ];
 
