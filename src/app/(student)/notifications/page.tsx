@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import { toast } from "@/hooks/useToast";
 import Link from "next/link";
-import { DemoOverlay } from "@/components/ui/DemoOverlay";
+import { DemoBanner } from "@/components/ui/DemoOverlay";
 
 /* ── Type & display configs ────────────────────────────────── */
 const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
@@ -109,219 +109,210 @@ export default function NotificationsPage() {
   const criticalCount = notifications.filter(n => !n.isRead && n.priority === "critical").length;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative space-y-5 max-w-3xl mx-auto">
-      {/* ── Demo overlay (transparent) – page visible but all interactions disabled ── */}
-      <DemoOverlay
-        variant="transparent"
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 max-w-3xl mx-auto">
+      {/* ── Demo Banner: Informational banner at the top ── */}
+      <DemoBanner
         title="Notifications Disabled"
-        description={
-          <>
-            <p>
-              Real-time notifications require the communication services used by
-              the platform (notification delivery and media infrastructure) to be
-              configured.
-            </p>
-            <p className="mt-2">
-              This feature is unavailable in the current demo.
-            </p>
-          </>
-        }
+        description="Real-time notifications require the communication services used by the platform (notification delivery and media infrastructure) to be configured. This feature is unavailable in the current demo."
       />
-      {/* ── Existing UI (untouched) ────────────────────────────────────────────── */}
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-muted-foreground text-sm">
-              {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
-            </p>
-            {criticalCount > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold">
-                <AlertCircle className="h-3 w-3" /> {criticalCount} critical
-              </span>
-            )}
+
+      {/* ── Existing UI: Fully visible underneath, all interactions disabled ── */}
+      <div className="space-y-5 pointer-events-none opacity-80 select-none">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-muted-foreground text-sm">
+                {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
+              </p>
+              {criticalCount > 0 && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold">
+                  <AlertCircle className="h-3 w-3" /> {criticalCount} critical
+                </span>
+              )}
+            </div>
+          </div>
+          {unreadCount > 0 && (
+            <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
+              <CheckCheck className="h-4 w-4" />
+              Mark all read
+            </Button>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Input
+            placeholder="Search notifications..."
+            leftIcon={<Search className="h-4 w-4" />}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="flex-1"
+            id="notif-search"
+          />
+          <div className="flex gap-2">
+            <Button
+              variant={showUnread ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowUnread(v => !v)}
+              className="gap-1.5 shrink-0"
+              id="notif-unread-filter"
+            >
+              <Bell className="h-3.5 w-3.5" />
+              Unread
+              {unreadCount > 0 && (
+                <span className="bg-destructive text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Button>
           </div>
         </div>
-        {unreadCount > 0 && (
-          <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
-            <CheckCheck className="h-4 w-4" />
-            Mark all read
-          </Button>
-        )}
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Input
-          placeholder="Search notifications..."
-          leftIcon={<Search className="h-4 w-4" />}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="flex-1"
-          id="notif-search"
-        />
-        <div className="flex gap-2">
-          <Button
-            variant={showUnread ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowUnread(v => !v)}
-            className="gap-1.5 shrink-0"
-            id="notif-unread-filter"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            Unread
-            {unreadCount > 0 && (
-              <span className="bg-destructive text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center font-bold">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </Button>
+        {/* Priority filter */}
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {[
+            { value: "", label: "All Priorities" },
+            { value: "critical", label: "🔴 Critical" },
+            { value: "high",     label: "🟠 High" },
+            { value: "medium",   label: "🟡 Medium" },
+            { value: "low",      label: "🟢 Low" },
+          ].map(p => (
+            <button
+              key={p.value}
+              onClick={() => setPriorityFilter(p.value)}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
+                priorityFilter === p.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* Priority filter */}
-      <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-        {[
-          { value: "", label: "All Priorities" },
-          { value: "critical", label: "🔴 Critical" },
-          { value: "high",     label: "🟠 High" },
-          { value: "medium",   label: "🟡 Medium" },
-          { value: "low",      label: "🟢 Low" },
-        ].map(p => (
-          <button
-            key={p.value}
-            onClick={() => setPriorityFilter(p.value)}
-            className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
-              priorityFilter === p.value
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:border-primary/50"
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Type filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-        {FILTER_TYPES.map(f => (
-          <button
-            key={f.value}
-            onClick={() => setTypeFilter(f.value)}
-            className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
-              typeFilter === f.value
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:border-primary/50"
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Notifications list */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-24 skeleton rounded-2xl" />)}
+        {/* Type filter pills */}
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {FILTER_TYPES.map(f => (
+            <button
+              key={f.value}
+              onClick={() => setTypeFilter(f.value)}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
+                typeFilter === f.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
-      ) : filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <BellOff className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">No notifications found</p>
-            <p className="text-muted-foreground/60 text-sm mt-1">
-              {search || typeFilter || priorityFilter || showUnread ? "Try adjusting your filters" : "You're all caught up!"}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map((n, i) => {
-            const cfg      = TYPE_CONFIG[n.type] ?? TYPE_CONFIG["system"];
-            const priCfg   = PRIORITY_CONFIG[n.priority as keyof typeof PRIORITY_CONFIG] ?? PRIORITY_CONFIG.low;
-            const Icon     = cfg.icon;
-            const isHigh   = n.priority === "critical" || n.priority === "high";
 
-            return (
-              <motion.div
-                key={n._id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.025 }}
-              >
-                <Card className={cn(
-                  "overflow-hidden transition-all duration-200 hover:shadow-md border",
-                  !n.isRead && isHigh ? priCfg.ring : "",
-                  !n.isRead && "border-primary/20 bg-primary/[0.02]"
-                )}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      {/* Icon */}
-                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative", cfg.bg)}>
-                        <Icon className={cn("h-5 w-5", cfg.color)} />
-                        {!n.isRead && (
-                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background" />
-                        )}
-                      </div>
+        {/* Notifications list */}
+        {loading ? (
+          <div className="space-y-3">
+            {[1,2,3,4,5].map(i => <div key={i} className="h-24 skeleton rounded-2xl" />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <Card>
+            <CardContent className="py-16 text-center">
+              <BellOff className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium">No notifications found</p>
+              <p className="text-muted-foreground/60 text-sm mt-1">
+                {search || typeFilter || priorityFilter || showUnread ? "Try adjusting your filters" : "You're all caught up!"}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((n, i) => {
+              const cfg      = TYPE_CONFIG[n.type] ?? TYPE_CONFIG["system"];
+              const priCfg   = PRIORITY_CONFIG[n.priority as keyof typeof PRIORITY_CONFIG] ?? PRIORITY_CONFIG.low;
+              const Icon     = cfg.icon;
+              const isHigh   = n.priority === "critical" || n.priority === "high";
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              <p className={cn("text-sm font-semibold leading-snug", !n.isRead ? "text-foreground" : "text-muted-foreground")}>
-                                {n.title}
-                              </p>
-                              {/* Priority badge */}
-                              <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-bold", priCfg.badge)}>
-                                {priCfg.label}
-                              </span>
-                              {/* Type badge */}
-                              <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", cfg.bg, cfg.color)}>
-                                {cfg.label}
-                              </span>
-                            </div>
-                            <p className="text-xs text-muted-foreground leading-relaxed">{n.message}</p>
-                            <p className="text-[11px] text-muted-foreground/50 mt-1">{timeAgo(n.createdAt)}</p>
-                          </div>
-
-                          {/* Mark read only — no delete */}
+              return (
+                <motion.div
+                  key={n._id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.025 }}
+                >
+                  <Card className={cn(
+                    "overflow-hidden transition-all duration-200 hover:shadow-md border",
+                    !n.isRead && isHigh ? priCfg.ring : "",
+                    !n.isRead && "border-primary/20 bg-primary/[0.02]"
+                  )}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        {/* Icon */}
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative", cfg.bg)}>
+                          <Icon className={cn("h-5 w-5", cfg.color)} />
                           {!n.isRead && (
-                            <button
-                              onClick={() => markAsRead(n._id)}
-                              title="Mark as read"
-                              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors shrink-0"
-                            >
-                              <CheckCheck className="h-3.5 w-3.5" />
-                            </button>
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background" />
                           )}
                         </div>
 
-                        {/* Link */}
-                        {n.link && (
-                          <Link href={n.link} className="inline-block mt-1.5 text-xs text-primary hover:underline font-medium">
-                            View →
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                <p className={cn("text-sm font-semibold leading-snug", !n.isRead ? "text-foreground" : "text-muted-foreground")}>
+                                  {n.title}
+                                </p>
+                                {/* Priority badge */}
+                                <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-bold", priCfg.badge)}>
+                                  {priCfg.label}
+                                </span>
+                                {/* Type badge */}
+                                <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium", cfg.bg, cfg.color)}>
+                                  {cfg.label}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">{n.message}</p>
+                              <p className="text-[11px] text-muted-foreground/50 mt-1">{timeAgo(n.createdAt)}</p>
+                            </div>
 
-      {/* Results count */}
-      {filtered.length > 0 && (
-        <p className="text-xs text-center text-muted-foreground/60">
-          Showing {filtered.length} of {notifications.length} notifications
-        </p>
-      )}
+                            {/* Mark read only — no delete */}
+                            {!n.isRead && (
+                              <button
+                                onClick={() => markAsRead(n._id)}
+                                title="Mark as read"
+                                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors shrink-0"
+                              >
+                                <CheckCheck className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Link */}
+                          {n.link && (
+                            <Link href={n.link} className="inline-block mt-1.5 text-xs text-primary hover:underline font-medium">
+                              View →
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Results count */}
+        {filtered.length > 0 && (
+          <p className="text-xs text-center text-muted-foreground/60">
+            Showing {filtered.length} of {notifications.length} notifications
+          </p>
+        )}
+      </div>
     </motion.div>
   );
 }

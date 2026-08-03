@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import { toast } from "@/hooks/useToast";
 import { EXAM_CATEGORIES } from "@/constants";
-import { DemoOverlay } from "@/components/ui/DemoOverlay";
+import { DemoBanner } from "@/components/ui/DemoOverlay";
 
 const PRIORITY_CONFIG = {
   low:    { label: "Low",    color: "text-muted-foreground", bg: "bg-muted" },
@@ -71,25 +71,19 @@ export default function AdminNotificationsPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative space-y-5">
-      {/* ── Demo overlay (transparent) – page visible but all interactions disabled ── */}
-      <DemoOverlay
-        variant="transparent"
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+      {/* ── Demo Banner: Informational warning banner at the top ── */}
+      <DemoBanner
         title="Notification Management Disabled"
-        description={
-          <>
-            <p>
-              Notification delivery depends on backend communication services
-              that are not configured in this demo environment.
-            </p>
-          </>
-        }
+        description="Notification delivery depends on backend communication services that are not configured in this demo environment."
       />
-      {/* ── Existing UI (untouched) ────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
-        <p className="text-muted-foreground text-sm">Broadcast announcements to students</p>
-      </div>
+
+      {/* ── Existing UI: Fully visible underneath, all controls disabled ── */}
+      <div className="space-y-5 pointer-events-none opacity-80 select-none">
+        <div>
+          <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
+          <p className="text-muted-foreground text-sm">Broadcast announcements to students</p>
+        </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Broadcast Form */}
@@ -226,6 +220,7 @@ export default function AdminNotificationsPage() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </motion.div>
   );

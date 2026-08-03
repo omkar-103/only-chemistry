@@ -103,7 +103,7 @@ export default function AdminVideosPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative space-y-5">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative space-y-5 min-h-[60vh]">
       {/* ── Demo overlay – covers the page; do NOT remove or modify existing code below ── */}
       <DemoOverlay
         title="Video Management Disabled"

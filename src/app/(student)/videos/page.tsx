@@ -29,7 +29,7 @@ export default function VideosPage() {
   };
 
   return (
-    <div className="relative space-y-5">
+    <div className="relative space-y-5 min-h-[60vh]">
       {/* ── Demo overlay – covers the page; do NOT remove or modify existing code below ── */}
       <DemoOverlay
         title="Video Library Unavailable"
