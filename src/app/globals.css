@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+/* ── Tailwind v4 Theme Tokens ─────────────────────────────── */
+@theme {
+  /* Brand Colors */
+  --color-navy-50:  #eef1f9;
+  --color-navy-100: #d5daf0;
+  --color-navy-200: #aab5e1;
+  --color-navy-300: #7f90d2;
+  --color-navy-400: #546bc3;
+  --color-navy-500: #2946b4;
+  --color-navy-600: #213890;
+  --color-navy-700: #192a6c;
+  --color-navy-800: #111c48;
+  --color-navy-900: #0a0f2c;
+  --color-navy-950: #060819;
+
+  --color-gold-50:  #fdf9ec;
+  --color-gold-100: #faf0cc;
+  --color-gold-200: #f4df99;
+  --color-gold-300: #eece66;
+  --color-gold-400: #e8bd33;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #aa8c2c;
+  --color-gold-700: #806921;
+  --color-gold-800: #554616;
+  --color-gold-900: #2b230b;
+
+  /* Semantic Colors (light mode) */
+  --color-background:         hsl(220 40% 97%);
+  --color-foreground:         hsl(222 47% 11%);
+  --color-card:               hsl(0 0% 100%);
+  --color-card-foreground:    hsl(222 47% 11%);
+  --color-popover:            hsl(0 0% 100%);
+  --color-popover-foreground: hsl(222 47% 11%);
+  --color-primary:            hsl(226 64% 35%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary:          hsl(220 20% 94%);
+  --color-secondary-foreground: hsl(222 47% 20%);
+  --color-muted:              hsl(220 20% 94%);
+  --color-muted-foreground:   hsl(220 15% 50%);
+  --color-accent:             hsl(43 65% 52%);
+  --color-accent-foreground:  hsl(222 47% 11%);
+  --color-destructive:        hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border:             hsl(220 20% 88%);
+  --color-input:              hsl(220 20% 88%);
+  --color-ring:               hsl(226 64% 35%);
+
+  /* Sidebar Colors */
+  --color-sidebar:                    hsl(222 47% 11%);
+  --color-sidebar-foreground:         hsl(220 20% 88%);
+  --color-sidebar-primary:            hsl(43 65% 52%);
+  --color-sidebar-primary-foreground: hsl(222 47% 11%);
+  --color-sidebar-accent:             hsl(226 64% 20%);
+  --color-sidebar-accent-foreground:  hsl(220 20% 88%);
+  --color-sidebar-border:             hsl(226 40% 20%);
+  --color-sidebar-ring:               hsl(43 65% 52%);
+
+  /* Fonts */
+  --font-sans:    "Inter", system-ui, sans-serif;
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+
+  /* Border Radius */
+  --radius:    0.75rem;
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+
+  /* Shadows */
+  --shadow-glow-gold:  0 0 20px rgba(212,175,55,0.3);
+  --shadow-glow-navy:  0 0 20px rgba(25,42,108,0.4);
+  --shadow-card-hover: 0 20px 60px rgba(0,0,0,0.3);
+  --shadow-glass:      0 8px 32px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.1);
+
+  /* Keyframes */
+  --animate-fade-in:   fade-in 0.4s ease-out;
+  --animate-slide-in:  slide-in 0.3s ease-out;
+  --animate-scale-in:  scale-in 0.2s ease-out;
+  --animate-shimmer:   shimmer 2s linear infinite;
+  --animate-float:     float 3s ease-in-out infinite;
+  --animate-glow:      glow 2s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 3s linear infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(212,175,55,0.3); }
+    50%       { box-shadow: 0 0 40px rgba(212,175,55,0.6); }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+}
+
+/* ── Dark Mode Overrides ─────────────────────────────────── */
+.dark {
+  --color-background:         hsl(222 47% 6%);
+  --color-foreground:         hsl(220 20% 94%);
+  --color-card:               hsl(222 47% 9%);
+  --color-card-foreground:    hsl(220 20% 94%);
+  --color-popover:            hsl(222 47% 9%);
+  --color-popover-foreground: hsl(220 20% 94%);
+  --color-primary:            hsl(43 65% 52%);
+  --color-primary-foreground: hsl(222 47% 11%);
+  --color-secondary:          hsl(222 47% 14%);
+  --color-secondary-foreground: hsl(220 20% 88%);
+  --color-muted:              hsl(222 47% 14%);
+  --color-muted-foreground:   hsl(220 15% 60%);
+  --color-accent:             hsl(43 65% 52%);
+  --color-accent-foreground:  hsl(222 47% 11%);
+  --color-destructive:        hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border:             hsl(222 47% 18%);
+  --color-input:              hsl(222 47% 18%);
+  --color-ring:               hsl(43 65% 52%);
+  --color-sidebar:                    hsl(222 47% 6%);
+  --color-sidebar-foreground:         hsl(220 20% 88%);
+  --color-sidebar-primary:            hsl(43 65% 52%);
+  --color-sidebar-primary-foreground: hsl(222 47% 11%);
+  --color-sidebar-accent:             hsl(226 64% 15%);
+  --color-sidebar-accent-foreground:  hsl(220 20% 88%);
+  --color-sidebar-border:             hsl(226 40% 15%);
+  --color-sidebar-ring:               hsl(43 65% 52%);
+}
+
+/* ── Base Styles ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  color: var(--color-foreground);
+}
+
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-muted-foreground) 30%, transparent);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-muted-foreground) 50%, transparent);
+}
+
+/* ── Utility Classes ─────────────────────────────────────── */
+
+/* Glass morphism */
+.glass {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.glass-dark {
+  background: rgba(10,15,44,0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* Hero gradient */
+.hero-gradient {
+  background: linear-gradient(135deg, #060819 0%, #0a0f2c 40%, #192a6c 70%, #0a0f2c 100%);
+}
+
+/* Card hover */
+.card-hover {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.card-hover:hover {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  transform: translateY(-4px);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(to right, #e8bd33, #aa8c2c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-navy {
+  background: linear-gradient(to right, var(--color-navy-400), var(--color-navy-700));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  background-color: var(--color-muted);
+  background-image: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.75rem;
+}
+
+/* Exam question palette states */
+.palette-answered       { background: #22c55e; color: #fff; border-color: #16a34a; }
+.palette-unanswered     { background: #ef4444; color: #fff; border-color: #dc2626; }
+.palette-not-visited    { background: #94a3b8; color: #fff; border-color: #64748b; }
+.palette-marked         { background: #a855f7; color: #fff; border-color: #9333ea; }
+.palette-answered-marked { background: #a855f7; color: #fff; border-color: #9333ea; }
+.palette-current        { outline: 2px solid #d4af37; outline-offset: 2px; }
+
+/* Sidebar nav */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-sidebar-foreground);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.nav-item:hover {
+  background: var(--color-sidebar-accent);
+  color: var(--color-sidebar-foreground);
+  opacity: 1;
+}
+.nav-item.active {
+  background: var(--color-sidebar-accent);
+  color: var(--color-sidebar-primary);
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Section helpers */
+.page-wrapper      { min-height: 100vh; background-color: var(--color-background); }
+.section-container { max-width: 80rem; margin: 0 auto; padding: 0 1rem; }
+
+/* Gold button */
+.btn-gold {
+  background: #d4af37;
+  color: #0a0f2c;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+}
+.btn-gold:hover {
+  background: #e8bd33;
+  box-shadow: 0 6px 25px rgba(212,175,55,0.5);
+}
+
+/* Exam fullscreen */
+.exam-fullscreen { user-select: none; -webkit-user-select: none; }
+.exam-fullscreen * { -webkit-touch-callout: none; }
+
+/* Math formula */
+.math-formula { font-family: "KaTeX_Math", "Times New Roman", serif; font-style: italic; }
+
+/* Palette scrollbar */
+.palette-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212,175,55,0.3) transparent;
+}
+
+/* Animation delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* Print */
+@media print {
+  .no-print { display: none !important; }
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
