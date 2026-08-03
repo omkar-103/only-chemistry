@@ -13,9 +13,9 @@ import { EXAM_CATEGORIES } from "@/constants";
 import { DemoBanner } from "@/components/ui/DemoOverlay";
 
 const PRIORITY_CONFIG = {
-  low:    { label: "Low",    color: "text-muted-foreground", bg: "bg-muted" },
-  medium: { label: "Medium", color: "text-blue-600",        bg: "bg-blue-100 dark:bg-blue-900/30" },
-  high:   { label: "High",   color: "text-red-600",         bg: "bg-red-100 dark:bg-red-900/30" },
+  low: { label: "Low", color: "text-muted-foreground", bg: "bg-muted" },
+  medium: { label: "Medium", color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/30" },
+  high: { label: "High", color: "text-red-600", bg: "bg-red-100 dark:bg-red-900/30" },
 };
 
 const DEFAULT_FORM = {
@@ -33,9 +33,9 @@ function timeAgo(date: string) {
 }
 
 export default function AdminNotificationsPage() {
-  const [form, setForm]         = useState(DEFAULT_FORM);
-  const [sending, setSending]   = useState(false);
-  const [history, setHistory]   = useState<any[]>([]);
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [sending, setSending] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
   const [loadingH, setLoadingH] = useState(true);
   const set = (k: keyof typeof DEFAULT_FORM, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -43,7 +43,7 @@ export default function AdminNotificationsPage() {
     // Load recent broadcast history (last 20 notifications of type announcement)
     axios.get("/api/admin/notifications/history")
       .then(r => setHistory(Array.isArray(r.data.data) ? r.data.data : []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoadingH(false));
   }, []);
 
@@ -55,9 +55,9 @@ export default function AdminNotificationsPage() {
     setSending(true);
     try {
       const res = await axios.post("/api/admin/notifications/broadcast", {
-        title:    form.title,
-        message:  form.message,
-        link:     form.link || undefined,
+        title: form.title,
+        message: form.message,
+        link: form.link || undefined,
         priority: form.priority,
         category: form.category || undefined,
       });
@@ -72,20 +72,19 @@ export default function AdminNotificationsPage() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-      {/* ── Demo Banner: Informational warning banner at the top ── */}
+      {/* ── Demo Banner: top-of-page warning, sidebar stays fully usable ── */}
       <DemoBanner
         title="Notification Management Disabled"
         description="Notification delivery depends on backend communication services that are not configured in this demo environment."
       />
-
-      {/* ── Existing UI: Fully visible underneath, all controls disabled ── */}
-      <div className="space-y-5 pointer-events-none opacity-80 select-none">
+      {/* ── Existing UI: fully visible, all controls disabled ── */}
+      <div className="space-y-5 pointer-events-none select-none opacity-75">
         <div>
           <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
           <p className="text-muted-foreground text-sm">Broadcast announcements to students</p>
         </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6">
         {/* Broadcast Form */}
         <Card>
           <CardHeader>
@@ -114,7 +113,7 @@ export default function AdminNotificationsPage() {
             <div>
               <label className="text-xs font-medium text-muted-foreground block mb-1.5">Priority</label>
               <div className="flex gap-2">
-                {(["low","medium","high"] as const).map(p => {
+                {(["low", "medium", "high"] as const).map(p => {
                   const cfg = PRIORITY_CONFIG[p];
                   return (
                     <button key={p}
@@ -189,7 +188,7 @@ export default function AdminNotificationsPage() {
           </CardHeader>
           <CardContent>
             {loadingH ? (
-              <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-14 skeleton rounded-xl" />)}</div>
+              <div className="space-y-2">{[1, 2, 3].map(i => <div key={i} className="h-14 skeleton rounded-xl" />)}</div>
             ) : history.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground text-sm">
                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-20" />
@@ -220,8 +219,8 @@ export default function AdminNotificationsPage() {
             )}
           </CardContent>
         </Card>
-        </div>
-      </div>
+        </div>{/* end grid */}
+      </div>{/* end pointer-events-none wrapper */}
     </motion.div>
   );
 }
