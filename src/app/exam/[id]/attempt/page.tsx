@@ -66,11 +66,16 @@ export default function ExamAttemptPage({ params }: Params) {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  const loginTimeRef = useRef(new Date());
-
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const autoSaveRef = useRef<NodeJS.Timeout | null>(null);
+  const loginTimeRef    = useRef(new Date());
+  const timerRef        = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveRef     = useRef<NodeJS.Timeout | null>(null);
   const questionStartTime = useRef(Date.now());
+  // Ref so handleAutoSubmit always calls the LATEST handleSubmit even though
+  // handleAutoSubmit has empty deps (it must be stable for the security hook).
+  // Without this, handleAutoSubmit captures a stale handleSubmit from the initial
+  // render where examId="" and attemptId="", causing the submit to fail silently.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmitRef = useRef<(...args: any[]) => Promise<void>>(() => Promise.resolve());
 
   // ── Load Exam ────────────────────────────────────────────────
   useEffect(() => {
@@ -143,7 +148,8 @@ export default function ExamAttemptPage({ params }: Params) {
   const handleAutoSubmit = useCallback((reason: string) => {
     setWarningMessage(`Your exam is being automatically submitted: ${reason.replace(/_/g, " ")}.`);
     setShowWarning(true);
-    setTimeout(() => handleSubmit(true, true, reason), 2500);
+    // Use ref so we always call the current (non-stale) handleSubmit
+    setTimeout(() => handleSubmitRef.current(true, true, reason), 2500);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -337,6 +343,9 @@ export default function ExamAttemptPage({ params }: Params) {
       setIsSubmitting(false);
     }
   };
+
+  // Keep the ref current on every render — this is what makes handleAutoSubmit safe
+  handleSubmitRef.current = handleSubmit;
 
   if (loading) {
     return (
