@@ -51,11 +51,15 @@ export default function StudentDashboardPage() {
       <motion.div variants={fadeUp} className="rounded-2xl bg-gradient-to-r from-navy-800 to-navy-600 p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-white/70 text-sm mb-1">Welcome back,</p>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/30">
+                ⚡ Active Preparation
+              </span>
+            </div>
             <h1 className="text-2xl font-display font-black">
               {user?.name} 👋
             </h1>
-            <p className="text-white/70 text-sm mt-2">
+            <p className="text-white/70 text-sm mt-1">
               Ready to continue your chemistry preparation?
             </p>
           </div>
@@ -63,6 +67,25 @@ export default function StudentDashboardPage() {
             CH₄
           </div>
         </div>
+
+        {/* Prep Stats Bar */}
+        <div className="mt-4 pt-3 border-t border-white/10 grid grid-cols-3 gap-3 max-w-lg text-xs">
+          <div>
+            <p className="text-white/60">Exams Taken</p>
+            <p className="text-base font-bold text-white">{recentResults.length}</p>
+          </div>
+          <div>
+            <p className="text-white/60">Passed</p>
+            <p className="text-base font-bold text-green-300">
+              {recentResults.filter((r) => r.isPassed).length}
+            </p>
+          </div>
+          <div>
+            <p className="text-white/60">Status</p>
+            <p className="text-base font-bold text-gold-400">On Track 🔥</p>
+          </div>
+        </div>
+
         <div className="mt-4 flex gap-3">
           <Link href={ROUTES.STUDENT.EXAMS}>
             <Button variant="gold" size="sm">
