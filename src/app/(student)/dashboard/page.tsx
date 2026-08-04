@@ -140,18 +140,18 @@ export default function StudentDashboardPage() {
           </Card>
         </motion.div>
 
-        {/* Recent Results */}
+        {/* Recent Results & Performance */}
         <motion.div variants={fadeUp}>
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base">Recent Results</CardTitle>
+              <CardTitle className="text-base">Recent Results & Score Trends</CardTitle>
               <Link href={ROUTES.STUDENT.RESULTS}>
                 <Button variant="ghost" size="sm" className="text-xs gap-1">
                   View all <ArrowRight className="h-3 w-3" />
                 </Button>
               </Link>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="h-16 rounded-xl skeleton" />
@@ -165,23 +165,43 @@ export default function StudentDashboardPage() {
                   </Link>
                 </div>
               ) : (
-                recentResults.map((result: any) => (
-                  <Link key={result._id} href={ROUTES.EXAM.RESULT(result._id)}>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold ${result.isPassed ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
-                        {result.percentage}%
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{result.examId?.title}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {result.timeTakenMinutes} mins
-                        </p>
-                      </div>
-                      <Star className={`h-4 w-4 ${result.isPassed ? "text-gold-500" : "text-muted-foreground/30"}`} />
+                <>
+                  {/* Quick Average Performance Meter */}
+                  <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/10">
+                    <div className="flex items-center justify-between text-xs font-semibold text-foreground mb-1.5">
+                      <span>Overall Average Score</span>
+                      <span className="text-primary font-bold">
+                        {Math.round(recentResults.reduce((acc: number, r: any) => acc + (r.percentage || 0), 0) / recentResults.length)}%
+                      </span>
                     </div>
-                  </Link>
-                ))
+                    <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-primary h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, Math.round(recentResults.reduce((acc: number, r: any) => acc + (r.percentage || 0), 0) / recentResults.length))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {recentResults.map((result: any) => (
+                    <Link key={result._id} href={ROUTES.EXAM.RESULT(result._id)}>
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold ${result.isPassed ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
+                          {result.percentage}%
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{result.examId?.title}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {result.timeTakenMinutes} mins
+                          </p>
+                        </div>
+                        <Star className={`h-4 w-4 ${result.isPassed ? "text-gold-500" : "text-muted-foreground/30"}`} />
+                      </div>
+                    </Link>
+                  ))}
+                </>
               )}
             </CardContent>
           </Card>
