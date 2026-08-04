@@ -362,7 +362,8 @@ export default function ExamAttemptPage({ params }: Params) {
   const currentResponse = responses[currentQuestion?._id as string];
   const answeredCount = Object.values(responses).filter((r) => r.selectedOptions.length > 0).length;
   const markedCount = Object.values(responses).filter((r) => r.isMarkedForReview).length;
-  const isTimeLow = timeLeft < 300; // 5 min warning
+  const isTimeCritical = timeLeft < 180; // 3 min critical
+  const isTimeLow = timeLeft < 600; // 10 min warning
 
   return (
     <div className="h-screen flex flex-col bg-muted/20 exam-fullscreen overflow-hidden">
@@ -379,12 +380,24 @@ export default function ExamAttemptPage({ params }: Params) {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className={cn(
-            "flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono font-bold text-sm",
-            isTimeLow ? "bg-red-500 animate-pulse" : "bg-navy-700"
-          )}>
-            <Clock className="h-4 w-4" />
-            {formatTime(timeLeft)}
+          <div
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono font-bold text-sm transition-colors",
+              isTimeCritical
+                ? "bg-red-600 text-white animate-pulse shadow-md shadow-red-500/20"
+                : isTimeLow
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                : "bg-navy-700 text-gold-400"
+            )}
+            title={isTimeCritical ? "Critical time remaining!" : isTimeLow ? "Under 10 minutes remaining" : "Time remaining"}
+          >
+            <Clock className={cn("h-4 w-4", isTimeCritical && "animate-spin")} />
+            <span>{formatTime(timeLeft)}</span>
+            {isTimeLow && (
+              <span className="hidden md:inline-block text-[10px] uppercase font-sans tracking-wider px-1.5 py-0.5 rounded bg-black/30">
+                {isTimeCritical ? "Critical" : "Low Time"}
+              </span>
+            )}
           </div>
           <span className="text-xs text-white/60 hidden sm:block">
             {user?.name}
