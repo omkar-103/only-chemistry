@@ -279,27 +279,58 @@ export default function ExamsPage() {
             </div>
           </div>
 
-          {/* Free only */}
-          <div className="flex items-center gap-3">
+          {/* Free only & Actions */}
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setFreeOnly(v => !v)}
               className={cn("flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                freeOnly ? "bg-green-500 text-white border-green-500" : "border-border hover:border-green-400 text-muted-foreground"
+                freeOnly ? "bg-emerald-600 text-white border-emerald-600" : "border-border hover:border-emerald-400 text-muted-foreground"
               )}
             >
               <Zap className="h-3 w-3" />
               Free Exams Only
             </button>
-            {(category || difficulty || freeOnly) && (
+            {(category || difficulty || freeOnly || search) && (
               <button
-                onClick={() => { setCategory(""); setDifficulty(""); setFreeOnly(false); }}
-                className="text-xs text-destructive hover:underline"
+                onClick={() => { setSearch(""); setCategory(""); setDifficulty(""); setFreeOnly(false); }}
+                className="text-xs text-destructive hover:underline font-medium"
               >
-                Clear all filters
+                Reset all filters
               </button>
             )}
           </div>
         </motion.div>
+      )}
+
+      {/* Active Filter Chips Summary */}
+      {(category || difficulty || freeOnly || search) && (
+        <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <span className="text-muted-foreground font-medium">Active filters:</span>
+          {search && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+              Search: "{search}"
+              <button onClick={() => setSearch("")} className="hover:text-foreground">✕</button>
+            </span>
+          )}
+          {category && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">
+              Category: {category}
+              <button onClick={() => setCategory("")} className="hover:text-foreground">✕</button>
+            </span>
+          )}
+          {difficulty && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">
+              Difficulty: {difficulty}
+              <button onClick={() => setDifficulty("")} className="hover:text-foreground">✕</button>
+            </span>
+          )}
+          {freeOnly && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+              Free Only
+              <button onClick={() => setFreeOnly(false)} className="hover:text-foreground">✕</button>
+            </span>
+          )}
+        </div>
       )}
 
       {/* Category quick-pills (always visible) */}
