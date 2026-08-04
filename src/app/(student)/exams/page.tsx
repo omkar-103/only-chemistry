@@ -34,38 +34,38 @@ function ExamCard({ exam, isPurchased }: { exam: any; isPurchased: boolean }) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -3 }}
       className="group"
     >
-      <Card className="overflow-hidden h-full flex flex-col transition-shadow duration-200 hover:shadow-lg border-border/70">
+      <Card className="overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:border-primary/40 border-border/70 bg-card">
         {/* Thumbnail */}
-        <div className="relative h-36 bg-gradient-to-br from-primary/20 via-primary/10 to-background flex items-center justify-center overflow-hidden">
+        <div className="relative h-40 bg-gradient-to-br from-navy-900/90 via-navy-800 to-navy-900 flex items-center justify-center overflow-hidden">
           {exam.thumbnail ? (
-            <img src={exam.thumbnail} alt={exam.title} className="w-full h-full object-cover" />
+            <img src={exam.thumbnail} alt={exam.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           ) : (
-            <div className="flex flex-col items-center gap-1 text-primary/40">
+            <div className="flex flex-col items-center gap-1.5 text-gold-400/80">
               <BookOpen className="h-12 w-12" />
-              <span className="text-xs font-medium">{exam.category}</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{exam.category}</span>
             </div>
           )}
 
           {/* Badges overlay */}
-          <div className="absolute top-2 left-2 flex gap-1.5">
+          <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
             {exam.isFree ? (
-              <span className="px-2 py-0.5 rounded-full bg-green-500 text-white text-[10px] font-bold uppercase tracking-wide">FREE</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">FREE</span>
             ) : isPurchased ? (
-              <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-bold uppercase tracking-wide">Purchased</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">Purchased</span>
             ) : (
-              <span className="px-2 py-0.5 rounded-full bg-gold-500 text-white text-[10px] font-bold uppercase">{CURRENCY_SYMBOL}{priceINR}</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-gold-500 text-white text-[10px] font-bold uppercase shadow-sm">{CURRENCY_SYMBOL}{priceINR}</span>
             )}
-            <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase", diff?.bg, diff?.color)}>
+            <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shadow-sm", diff?.bg, diff?.color)}>
               {diff?.label}
             </span>
           </div>
 
           {/* Attempt count */}
           {(exam.attemptCount ?? 0) > 0 && (
-            <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px]">
+            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-[10px]">
               <Users className="h-2.5 w-2.5" />
               {exam.attemptCount}
             </div>
@@ -81,26 +81,36 @@ function ExamCard({ exam, isPurchased }: { exam: any; isPurchased: boolean }) {
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{exam.description}</p>
           </div>
 
-          {/* Meta */}
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          {/* Meta Information Grid */}
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[11px] text-muted-foreground bg-muted/30 p-2.5 rounded-xl border border-border/40">
             <span className="flex items-center gap-1">
-              <BookOpen className="h-3 w-3" />{exam.totalQuestions || 0} Questions
+              <BookOpen className="h-3 w-3 text-primary" />{exam.totalQuestions || 0} Questions
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />{exam.totalDuration || 0} mins
+              <Clock className="h-3 w-3 text-primary" />{exam.totalDuration || 0} mins
             </span>
             <span className="flex items-center gap-1">
-              <BarChart2 className="h-3 w-3" />{exam.passingPercentage}% to pass
+              <Trophy className="h-3 w-3 text-gold-500" />{exam.totalMarks || 100} Marks
+            </span>
+            <span className="flex items-center gap-1">
+              <BarChart2 className="h-3 w-3 text-green-500" />{exam.passingPercentage}% to pass
             </span>
           </div>
 
           {/* Category tag */}
-          <span className="self-start px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground">
-            {exam.category}
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="self-start px-2 py-0.5 rounded-md bg-muted text-[11px] font-medium text-muted-foreground">
+              {exam.category}
+            </span>
+            {exam.negativeMarking && (
+              <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900">
+                Negative Marking
+              </span>
+            )}
+          </div>
 
           {/* CTA */}
-          <div className="mt-auto pt-2">
+          <div className="mt-auto pt-1">
             {exam.isFree || isPurchased ? (
               <Link href={`/exam/${exam._id}/instructions`} className="block">
                 <Button variant="gold" size="sm" className="w-full gap-1.5">
