@@ -33,10 +33,10 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; label:
 };
 
 const PRIORITY_CONFIG = {
-  critical: { label: "🔴 Critical", badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400", ring: "border-red-400/50" },
-  high: { label: "🟠 High", badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400", ring: "border-orange-400/50" },
-  medium: { label: "🟡 Medium", badge: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400", ring: "border-yellow-400/50" },
-  low: { label: "🟢 Low", badge: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400", ring: "" },
+  critical: { label: "Critical", badge: "bg-red-500/10 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-500/30 shadow-xs", ring: "border-red-500/40 shadow-red-500/5 shadow-md" },
+  high: { label: "High", badge: "bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-500/30", ring: "border-amber-500/40" },
+  medium: { label: "Medium", badge: "bg-blue-500/10 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-500/20", ring: "border-blue-500/30" },
+  low: { label: "Low", badge: "bg-slate-500/10 text-slate-600 dark:bg-slate-950/40 dark:text-slate-400 border border-slate-500/20", ring: "" },
 };
 
 const FILTER_TYPES = [
@@ -252,7 +252,10 @@ export default function NotificationsPage() {
                       <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative", cfg.bg)}>
                         <Icon className={cn("h-5 w-5", cfg.color)} />
                         {!n.isRead && (
-                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background" />
+                          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/70 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary border-2 border-background"></span>
+                          </span>
                         )}
                       </div>
 
