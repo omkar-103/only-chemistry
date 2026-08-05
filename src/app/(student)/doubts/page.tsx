@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, Plus, X, Send, ChevronDown, ChevronUp,
   Image as ImageIcon, Loader2, CheckCircle2, Clock,
-  Trash2, UploadCloud,
+  Trash2, UploadCloud, Copy, Check, Sparkles, Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -302,22 +302,41 @@ export default function DoubtsPage() {
 
                         {/* Admin reply */}
                         {doubt.status === "answered" && doubt.reply ? (
-                          <div className="rounded-xl border border-green-500/20 bg-green-50/50 dark:bg-green-900/10 p-4">
-                            <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Expert Reply
-                            </p>
-                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                          <div className="rounded-xl border border-green-500/30 bg-gradient-to-b from-green-50/80 to-green-50/30 dark:from-green-950/20 dark:to-green-900/10 p-4 relative shadow-sm">
+                            <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-green-500/15">
+                              <div className="flex items-center gap-1.5">
+                                <span className="p-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400">
+                                  <Sparkles className="h-3.5 w-3.5" />
+                                </span>
+                                <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">
+                                  Verified Expert Answer
+                                </span>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="xs"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(doubt.reply);
+                                  toast({ title: "Answer copied to clipboard!", variant: "success" });
+                                }}
+                                className="h-7 text-[11px] gap-1 text-green-700 dark:text-green-300 border-green-500/30 hover:bg-green-100 dark:hover:bg-green-900/40"
+                              >
+                                <Copy className="h-3 w-3" /> Copy Answer
+                              </Button>
+                            </div>
+                            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap pt-1">
                               {doubt.reply}
                             </p>
                             {doubt.replyImage && (
                               <img
                                 src={doubt.replyImage}
                                 alt="Expert attachment"
-                                className="mt-3 max-h-64 rounded-xl border border-green-500/20 object-contain"
+                                className="mt-3 max-h-64 rounded-xl border border-green-500/20 object-contain shadow-sm"
                               />
                             )}
                             {doubt.repliedAt && (
-                              <p className="text-[11px] text-muted-foreground/60 mt-2">
+                              <p className="text-[11px] text-muted-foreground/60 mt-3 pt-2 border-t border-green-500/10 flex items-center gap-1">
+                                <Clock className="h-3 w-3 text-muted-foreground/50" />
                                 Replied {format(new Date(doubt.repliedAt), "d MMM yyyy, h:mm a")}
                               </p>
                             )}
