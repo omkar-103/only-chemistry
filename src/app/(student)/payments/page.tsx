@@ -75,62 +75,78 @@ export default function PaymentsPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {payments.map((p, i) => (
                 <motion.div
                   key={p._id}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors"
+                  className="flex items-center gap-3 p-3.5 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors border border-border/50"
                 >
                   <div
                     className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                      "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-xs",
                       p.status === "paid"
-                        ? "bg-green-100 dark:bg-green-900/30"
+                        ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
                         : p.status === "failed"
-                        ? "bg-red-100 dark:bg-red-900/30"
-                        : "bg-yellow-100 dark:bg-yellow-900/30"
+                        ? "bg-red-500/10 text-red-600 dark:bg-red-950/40 dark:text-red-400"
+                        : "bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
                     )}
                   >
                     {p.status === "paid" ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     ) : p.status === "failed" ? (
-                      <XCircle className="h-5 w-5 text-red-600" />
+                      <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                     ) : (
-                      <Clock className="h-5 w-5 text-yellow-600" />
+                      <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {p.examId?.title || "Exam Purchase"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {p.examId?.title || "Exam Purchase"}
+                      </p>
+                      <span className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
+                        p.status === "paid"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-500/20"
+                          : p.status === "failed"
+                          ? "bg-red-500/10 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-500/20"
+                          : "bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-500/20"
+                      )}>
+                        {p.status === "paid" ? "SUCCESSFUL" : p.status.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {p.createdAt ? format(new Date(p.createdAt), "dd MMM yyyy, hh:mm a") : ""}
                     </p>
                     {p.razorpayPaymentId && (
-                      <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                        {p.razorpayPaymentId}
-                      </p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-[10px] text-muted-foreground font-mono bg-muted/80 px-1.5 py-0.5 rounded border border-border/50">
+                          ID: {p.razorpayPaymentId}
+                        </span>
+                      </div>
                     )}
                   </div>
 
                   <div className="text-right shrink-0">
                     <p
                       className={cn(
-                        "text-sm font-bold",
+                        "text-base font-bold",
                         p.status === "paid"
-                          ? "text-green-600"
+                          ? "text-emerald-600 dark:text-emerald-400"
                           : p.status === "failed"
-                          ? "text-red-500"
-                          : "text-yellow-600"
+                          ? "text-red-500 dark:text-red-400"
+                          : "text-amber-600 dark:text-amber-400"
                       )}
                     >
                       {CURRENCY_SYMBOL}{(p.amount / 100).toFixed(2)}
                     </p>
-                    <p className="text-xs text-muted-foreground capitalize">{p.status}</p>
+                    <span className="text-[10px] text-muted-foreground/70 block mt-0.5">
+                      Razorpay Online
+                    </span>
                   </div>
                 </motion.div>
               ))}
