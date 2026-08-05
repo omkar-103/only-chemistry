@@ -70,27 +70,35 @@ export default function VideosPage() {
             const ytId = v.youtubeLink ? getYouTubeId(v.youtubeLink) : "";
             return (
               <motion.div key={v._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer" onClick={() => setPreview(v)}>
-                  <div className="relative h-40 bg-gradient-to-br from-navy-800 to-navy-600 overflow-hidden">
+                <Card className="group overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-border/80" onClick={() => setPreview(v)}>
+                  <div className="relative h-44 bg-gradient-to-br from-slate-900 to-navy-900 overflow-hidden">
                     {ytId ? (
-                      <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={v.title} className="w-full h-full object-cover" />
+                      <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
-                      <div className="flex items-center justify-center h-full"><PlayCircle className="h-12 w-12 text-white/30" /></div>
+                      <div className="flex items-center justify-center h-full"><PlayCircle className="h-14 w-14 text-white/30" /></div>
                     )}
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <PlayCircle className="h-14 w-14 text-white" />
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 flex items-center justify-center transition-colors">
+                      <div className="w-12 h-12 rounded-full bg-primary/90 text-primary-foreground flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <PlayCircle className="h-7 w-7 text-white fill-white/20" />
+                      </div>
                     </div>
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-0.5 rounded-full bg-black/50 text-white text-xs">{v.category}</span>
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="px-2.5 py-0.5 rounded-full backdrop-blur-md bg-black/60 border border-white/10 text-white text-[11px] font-medium tracking-wide">
+                        {v.category}
+                      </span>
                     </div>
-                    {v.duration && <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-white text-xs">{v.duration}</div>}
+                    {v.duration && (
+                      <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md backdrop-blur-md bg-black/70 border border-white/10 text-white text-[10px] font-semibold tracking-wider">
+                        {v.duration}
+                      </div>
+                    )}
                   </div>
-                  <CardContent className="pt-3 pb-4">
-                    <h3 className="font-semibold text-sm text-foreground line-clamp-2 leading-snug">{v.title}</h3>
-                    {v.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{v.description}</p>}
-                    <div className="flex gap-2 mt-2">
-                      {v.youtubeLink && <span className="flex items-center gap-1 text-[10px] text-red-500"><Video className="h-3 w-3" />YouTube</span>}
-                      {v.googleDriveLink && <span className="flex items-center gap-1 text-[10px] text-blue-500"><HardDrive className="h-3 w-3" />Drive</span>}
+                  <CardContent className="pt-3.5 pb-4">
+                    <h3 className="font-semibold text-sm text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{v.title}</h3>
+                    {v.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{v.description}</p>}
+                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/50">
+                      {v.youtubeLink && <span className="flex items-center gap-1 text-[11px] font-medium text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full"><Video className="h-3 w-3" />YouTube</span>}
+                      {v.googleDriveLink && <span className="flex items-center gap-1 text-[11px] font-medium text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full"><HardDrive className="h-3 w-3" />Drive</span>}
                     </div>
                   </CardContent>
                 </Card>
