@@ -34,20 +34,22 @@ interface StatCardProps {
 function StatCard({ title, value, icon, change, color }: StatCardProps) {
   return (
     <motion.div variants={fadeUp}>
-      <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-        <CardContent className="pt-6">
+      <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 border-border/80 relative overflow-hidden group">
+        <CardContent className="pt-5 pb-5">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground font-medium">{title}</p>
-              <p className="text-2xl font-display font-black text-foreground mt-1">{value}</p>
-              {change && (
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" />
-                  {change}
-                </p>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</p>
+              <p className="text-2xl font-display font-black text-foreground tracking-tight">{value}</p>
+              {change ? (
+                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mt-1">
+                  <TrendingUp className="h-2.5 w-2.5" />
+                  <span>{change}</span>
+                </div>
+              ) : (
+                <div className="h-4" />
               )}
             </div>
-            <div className={`p-3 rounded-xl ${color}`}>
+            <div className={cn("p-2.5 rounded-xl transition-transform group-hover:scale-110 shadow-xs", color)}>
               {icon}
             </div>
           </div>
