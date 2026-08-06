@@ -71,19 +71,30 @@ function CategoryForm({
 
       {/* Color picker */}
       <div>
-        <label className="text-xs font-medium text-muted-foreground block mb-1.5">Color</label>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Category Theme Color</label>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full border border-border" style={{ background: form.color }} />
+            <span className="text-xs font-mono font-medium text-foreground">{form.color}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap p-2 rounded-xl bg-muted/40 border border-border">
           {PRESET_COLORS.map(c => (
             <button key={c} type="button"
               onClick={() => set("color", c)}
               style={{ background: c }}
-              className={cn("w-8 h-8 rounded-full border-2 transition-all", form.color === c ? "border-foreground scale-110" : "border-transparent hover:scale-105")}
-            />
+              className={cn("w-7 h-7 rounded-lg border-2 transition-all relative group", form.color === c ? "border-foreground scale-110 shadow-md ring-2 ring-primary/20" : "border-transparent opacity-80 hover:opacity-100 hover:scale-105")}
+            >
+              {form.color === c && <span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold drop-shadow">✓</span>}
+            </button>
           ))}
-          <input type="color" value={form.color}
-            onChange={e => set("color", e.target.value)}
-            className="w-8 h-8 rounded-full cursor-pointer border-0 bg-transparent" />
-          <span className="text-xs text-muted-foreground font-mono">{form.color}</span>
+          <div className="h-6 w-[1px] bg-border mx-1" />
+          <label className="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-border bg-background cursor-pointer hover:bg-muted text-xs text-muted-foreground transition-colors">
+            <input type="color" value={form.color}
+              onChange={e => set("color", e.target.value)}
+              className="w-4 h-4 rounded cursor-pointer border-0 bg-transparent p-0" />
+            <span>Custom</span>
+          </label>
         </div>
       </div>
 
