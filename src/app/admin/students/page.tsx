@@ -176,21 +176,59 @@ export default function AdminStudentsPage() {
           )}
 
           {/* Pagination */}
-          {total > 15 && (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {((page - 1) * 15) + 1}–{Math.min(page * 15, total)} of {total}
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" disabled={page * 15 >= total} onClick={() => setPage(page + 1)}>
-                  Next
-                </Button>
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-3 border-t border-border/60">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Showing <strong className="text-foreground font-semibold">{total === 0 ? 0 : ((page - 1) * 15) + 1}</strong> to <strong className="text-foreground font-semibold">{Math.min(page * 15, total)}</strong> of <strong className="text-foreground font-semibold">{total}</strong> students</span>
             </div>
-          )}
+            
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1 || loading}
+                onClick={() => setPage(page - 1)}
+                className="h-8 px-2.5 text-xs gap-1"
+              >
+                Previous
+              </Button>
+              
+              {/* Page Pill Indicators */}
+              <div className="flex items-center gap-1 px-1">
+                {Array.from({ length: Math.ceil(total / 15) || 1 }).map((_, idx) => {
+                  const pNum = idx + 1;
+                  if (Math.abs(pNum - page) <= 1 || pNum === 1 || pNum === Math.ceil(total / 15)) {
+                    return (
+                      <button
+                        key={pNum}
+                        onClick={() => setPage(pNum)}
+                        className={cn(
+                          "w-7 h-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center",
+                          page === pNum
+                            ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                            : "text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        {pNum}
+                      </button>
+                    );
+                  }
+                  if (pNum === 2 && page > 3) return <span key="dots1" className="text-xs text-muted-foreground px-0.5">…</span>;
+                  if (pNum === Math.ceil(total / 15) - 1 && page < Math.ceil(total / 15) - 2) return <span key="dots2" className="text-xs text-muted-foreground px-0.5">…</span>;
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page * 15 >= total || loading}
+                onClick={() => setPage(page + 1)}
+                className="h-8 px-2.5 text-xs gap-1"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </motion.div>
