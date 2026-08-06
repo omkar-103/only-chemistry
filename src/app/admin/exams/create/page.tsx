@@ -305,28 +305,45 @@ export default function CreateExamPage() {
       </div>
 
       {/* ── Step Indicator ── */}
-      <div className="flex items-center gap-0">
-        {STEPS.map((s, i) => {
-          const Icon = s.icon;
-          const done = step > s.id;
-          const current = step === s.id;
-          return (
-            <div key={s.id} className="flex items-center flex-1">
-              <div className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg transition-all",
-                current ? "bg-primary text-primary-foreground"
-                  : done ? "bg-green-500 text-white"
-                    : "bg-muted text-muted-foreground"
-              )}>
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="text-xs font-medium hidden sm:inline">{s.label}</span>
+      <div className="bg-card p-3 rounded-2xl border border-border shadow-xs">
+        <div className="flex items-center justify-between gap-1 sm:gap-2">
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            const done = step > s.id;
+            const current = step === s.id;
+            return (
+              <div key={s.id} className="flex items-center flex-1">
+                <button
+                  type="button"
+                  onClick={() => { if (done) setStep(s.id); }}
+                  disabled={!done && !current}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-xl transition-all w-full text-left",
+                    current
+                      ? "bg-primary text-primary-foreground font-semibold shadow-xs ring-2 ring-primary/30"
+                      : done
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
+                        : "bg-muted/60 text-muted-foreground opacity-70"
+                  )}
+                >
+                  <div className={cn(
+                    "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
+                    current ? "bg-primary-foreground/20 text-primary-foreground" : done ? "bg-emerald-500 text-white" : "bg-muted-foreground/20 text-muted-foreground"
+                  )}>
+                    {done ? "✓" : s.id}
+                  </div>
+                  <div className="hidden sm:block min-w-0">
+                    <div className="text-xs font-semibold truncate">{s.label}</div>
+                    <div className="text-[10px] opacity-70 truncate">{current ? "Current step" : done ? "Completed" : "Pending"}</div>
+                  </div>
+                </button>
+                {i < STEPS.length - 1 && (
+                  <div className={cn("h-0.5 w-3 sm:w-6 mx-1 shrink-0 rounded-full", done ? "bg-emerald-500" : "bg-border")} />
+                )}
               </div>
-              {i < STEPS.length - 1 && (
-                <div className={cn("flex-1 h-0.5 mx-1", done ? "bg-green-500" : "bg-border")} />
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
