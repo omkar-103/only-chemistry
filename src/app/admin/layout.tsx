@@ -56,6 +56,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [isAuthenticated, user, router]);
 
+  // Close mobile sidebar on route change on narrow viewports
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+
   if (!isAuthenticated || user?.role !== "admin") return null;
 
   return (
