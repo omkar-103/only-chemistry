@@ -255,10 +255,15 @@ export default function AdminVideosPage() {
       {loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-52 rounded-2xl skeleton" />
+            <div key={i} className="rounded-2xl border border-border/40 p-4 space-y-3 bg-card/50">
+              <div className="h-32 rounded-xl skeleton" />
+              <div className="h-4 w-3/4 rounded-md skeleton" />
+              <div className="h-3 w-1/2 rounded-md skeleton" />
+            </div>
           ))}
         </div>
-      ) : videos.length === 0 ? (
+      )
+ : videos.length === 0 ? (
         <div className="text-center py-16">
           <PlayCircle className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-muted-foreground font-medium">No videos yet</p>
