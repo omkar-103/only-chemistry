@@ -101,8 +101,9 @@ export default function AdminStudentsPage() {
           ) : students.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">No students found</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto -mx-1 px-1 rounded-xl">
+              <table className="w-full text-sm min-w-[600px]">
+
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-2 text-muted-foreground font-medium">Name</th>
