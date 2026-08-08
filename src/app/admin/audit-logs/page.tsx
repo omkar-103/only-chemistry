@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Search, AlertTriangle, Info, AlertCircle } from "lucide-react";
+import { Shield, Search, AlertTriangle, Info, AlertCircle, X, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -54,30 +54,51 @@ export default function AuditLogsPage() {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
       <div>
         <h1 className="text-2xl font-display font-black text-foreground">Audit Logs</h1>
-        <p className="text-muted-foreground text-sm">Security and activity trail for all platform actions</p>
+        <p className="text-muted-foreground text-sm">Security and activity audit trail for platform events</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Input
-          id="log-search"
-          placeholder="Search by action, resource, or user..."
-          leftIcon={<Search className="h-4 w-4" />}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1"
-        />
-        <div className="flex gap-2 flex-wrap">
-          {(["all", "info", "warning", "error", "critical"] as const).map((s) => (
-            <Button
-              key={s}
-              variant={severity === s ? "default" : "outline"}
-              size="sm"
-              onClick={() => { setSeverity(s); setPage(1); }}
-              className="capitalize"
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <div className="relative flex-1">
+          <Input
+            id="log-search"
+            placeholder="Search by action, resource, or user..."
+            leftIcon={<Search className="h-4 w-4 text-muted-foreground" />}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pr-8"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              {s}
-            </Button>
-          ))}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {(["all", "info", "warning", "error", "critical"] as const).map((s) => {
+            const count = s === "all" ? logs.length : logs.filter(l => l.severity === s).length;
+            return (
+              <Button
+                key={s}
+                variant={severity === s ? "default" : "outline"}
+                size="sm"
+                onClick={() => { setSeverity(s); setPage(1); }}
+                className="capitalize gap-1.5 text-xs"
+              >
+                {s}
+                {count > 0 && (
+                  <span className={cn(
+                    "px-1.5 py-0.2 rounded-full text-[10px] font-bold",
+                    severity === s ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}>
+                    {count}
+                  </span>
+                )}
+              </Button>
+            );
+          })}
         </div>
       </div>
 
@@ -92,7 +113,17 @@ export default function AuditLogsPage() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12">
               <Shield className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">No audit logs found</p>
+              <p className="text-muted-foreground">No audit logs matching selected filters</p>
+              {(search || severity !== "all") && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => { setSearch(""); setSeverity("all"); }}
+                  className="mt-2 text-gold-500"
+                >
+                  Clear all filters
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -102,7 +133,7 @@ export default function AuditLogsPage() {
                 return (
                   <div
                     key={log._id}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/60 transition-colors text-sm"
+                    className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/60 transition-colors text-sm border border-transparent hover:border-border"
                   >
                     <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5", sev?.bg)}>
                       <Icon className={cn("h-3.5 w-3.5", sev?.color)} />
@@ -155,3 +186,4 @@ export default function AuditLogsPage() {
     </motion.div>
   );
 }
+
