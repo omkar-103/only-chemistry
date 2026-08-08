@@ -26,12 +26,15 @@ export default function SessionMonitoringPage() {
   const [loading, setLoading]   = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState<number>(30); // 15, 30, 60 seconds
+  const [secondsLeft, setSecondsLeft] = useState<number>(30);
 
   const fetchSessions = async () => {
     try {
       const res = await axios.get("/api/admin/sessions");
       setData(res.data.data);
       setLastUpdated(new Date());
+      setSecondsLeft(refreshInterval);
     } catch (e) {
       console.error(e);
     } finally {
@@ -45,9 +48,18 @@ export default function SessionMonitoringPage() {
 
   useEffect(() => {
     if (!autoRefresh) return;
-    const interval = setInterval(fetchSessions, 30_000); // every 30 seconds
-    return () => clearInterval(interval);
-  }, [autoRefresh]);
+    setSecondsLeft(refreshInterval);
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          fetchSessions();
+          return refreshInterval;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [autoRefresh, refreshInterval]);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-64">
@@ -70,7 +82,23 @@ export default function SessionMonitoringPage() {
             </span>
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {autoRefresh && (
+            <div className="flex gap-1 bg-muted/40 p-1 rounded-lg border border-border text-xs">
+              {[15, 30, 60].map((sec) => (
+                <button
+                  key={sec}
+                  onClick={() => { setRefreshInterval(sec); setSecondsLeft(sec); }}
+                  className={cn(
+                    "px-2 py-0.5 rounded font-medium transition-colors text-[11px]",
+                    refreshInterval === sec ? "bg-card text-foreground font-bold shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {sec}s
+                </button>
+              ))}
+            </div>
+          )}
           <Button
             variant={autoRefresh ? "default" : "outline"}
             size="sm"
@@ -78,8 +106,8 @@ export default function SessionMonitoringPage() {
             onClick={() => setAutoRefresh(v => !v)}
             id="auto-refresh"
           >
-            {autoRefresh ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-            {autoRefresh ? "Auto Refresh ON" : "Auto Refresh OFF"}
+            {autoRefresh ? <Wifi className="h-4 w-4 text-green-400" /> : <WifiOff className="h-4 w-4" />}
+            {autoRefresh ? `Auto Refresh (${secondsLeft}s)` : "Auto Refresh OFF"}
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={fetchSessions} id="manual-refresh">
             <RefreshCw className="h-4 w-4" /> Refresh
