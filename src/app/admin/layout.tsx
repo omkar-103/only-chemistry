@@ -174,20 +174,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <div>
-              <h1 className="text-sm font-semibold text-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Link href={ROUTES.ADMIN.DASHBOARD} className="hover:text-foreground transition-colors">Admin</Link>
+                <span>/</span>
+                <span className="text-foreground font-medium truncate max-w-[140px] sm:max-w-none">
+                  {NAV_SECTIONS.flatMap((s) => s.items).find((n) => n.href === pathname)?.label || "Dashboard"}
+                </span>
+              </div>
+              <h1 className="text-sm font-bold text-foreground">
                 {NAV_SECTIONS.flatMap((s) => s.items).find((n) => n.href === pathname)?.label || "Admin Panel"}
               </h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">
-                RHGConsultancyService Administration
-              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon-sm" className="relative">
-              <Bell className="h-4 w-4" />
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 text-xs font-semibold border border-green-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span>System Operational</span>
+            </div>
+            <Button variant="ghost" size="icon-sm" className="relative" asChild>
+              <Link href={ROUTES.ADMIN.NOTIFICATIONS}>
+                <Bell className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+              </Link>
             </Button>
-            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Welcome,</span>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground border-l border-border pl-3">
+              <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px]">
+                {user?.name?.[0]?.toUpperCase()}
+              </div>
               <span className="font-medium text-foreground">{user?.name}</span>
             </div>
           </div>
