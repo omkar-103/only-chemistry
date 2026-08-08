@@ -248,6 +248,12 @@ export default function CreateExamPage() {
       if (q.correctAnswers.length === 0) {
         return `Question ${i + 1}: Please select at least one correct answer`;
       }
+      if (q.marks <= 0) {
+        return `Question ${i + 1}: Positive marks must be greater than 0`;
+      }
+      if (q.negativeMarks < 0 || q.negativeMarks > q.marks) {
+        return `Question ${i + 1}: Negative marks cannot exceed positive marks (${q.marks})`;
+      }
     }
     return null;
   };
