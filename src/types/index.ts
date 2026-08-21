@@ -1,8 +1,8 @@
-// ============================================================
-// RHG Exam Portal — All TypeScript Types & Interfaces
+﻿// ============================================================
+// Only Chemistry Exam Portal â€” All TypeScript Types & Interfaces
 // ============================================================
 
-// ── User / Auth ──────────────────────────────────────────────
+// â”€â”€ User / Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type UserRole = "student" | "admin";
 
 export interface IUser {
@@ -19,12 +19,14 @@ export interface IUser {
   updatedAt: string;
   // Student-specific fields (present when role === "student")
   purchasedExams?: string[];
+  assignedCategories?: string[];
   totalTimeOnSite?: number;
   lastActive?: string;
 }
 
 export interface IStudentProfile extends IUser {
   purchasedExams: string[];
+  assignedCategories: string[];
   totalTimeOnSite: number; // seconds
   lastActive?: string;
   currentSession?: string;
@@ -59,7 +61,7 @@ export interface OTPVerifyData {
   otp: string;
 }
 
-// ── Categories ────────────────────────────────────────────────
+// â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type ExamCategory =
   | "JEE Main"
   | "JEE Advanced"
@@ -80,7 +82,7 @@ export interface ICategory {
   videoCount?: number;
 }
 
-// ── Questions ─────────────────────────────────────────────────
+// â”€â”€ Questions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type QuestionType = "single" | "multiple" | "truefalse";
 
 export interface IOption {
@@ -104,7 +106,7 @@ export interface IQuestion {
   order: number;
 }
 
-// ── Exams ─────────────────────────────────────────────────────
+// â”€â”€ Exams â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type DifficultyLevel = "easy" | "medium" | "hard";
 export type ExamStatus = "draft" | "published" | "archived";
 export type ResultVisibility = "hidden" | "score_only" | "full";
@@ -144,7 +146,7 @@ export interface ExamListItem extends Omit<IExam, "questions"> {
   questionCount: number;
 }
 
-// ── Exam Attempts ─────────────────────────────────────────────
+// â”€â”€ Exam Attempts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type AttemptStatus = "in_progress" | "submitted" | "timed_out" | "auto_submitted";
 
 export interface IResponse {
@@ -180,7 +182,7 @@ export interface IExamAttempt {
   timeTakenMinutes?: number;
 }
 
-// ── Results ───────────────────────────────────────────────────
+// â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface IResultQuestion {
   question: IQuestion;
   selectedOptions: string[];
@@ -204,7 +206,7 @@ export interface IResult {
   timeTakenMinutes: number;
 }
 
-// ── Payments ──────────────────────────────────────────────────
+// â”€â”€ Payments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type PaymentStatus = "created" | "pending" | "paid" | "failed" | "refunded";
 
 export interface IPayment {
@@ -224,7 +226,7 @@ export interface IPayment {
   updatedAt: string;
 }
 
-// ── Doubts ────────────────────────────────────────────────────
+// â”€â”€ Doubts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type DoubtStatus = "pending" | "answered";
 
 export interface IDoubt {
@@ -244,7 +246,7 @@ export interface IDoubt {
   updatedAt: string;
 }
 
-// ── Videos ────────────────────────────────────────────────────
+// â”€â”€ Videos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface IVideo {
   _id: string;
   title: string;
@@ -259,7 +261,7 @@ export interface IVideo {
   createdAt: string;
 }
 
-// ── Notifications ─────────────────────────────────────────────
+// â”€â”€ Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type NotificationType =
   | "registration"
   | "email_verified"
@@ -283,7 +285,7 @@ export interface INotification {
   createdAt: string;
 }
 
-// ── Audit Logs ────────────────────────────────────────────────
+// â”€â”€ Audit Logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface IAuditLog {
   _id: string;
   userId?: string;
@@ -297,7 +299,7 @@ export interface IAuditLog {
   createdAt: string;
 }
 
-// ── Analytics ─────────────────────────────────────────────────
+// â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface IRevenueData {
   month: string;
   revenue: number;
@@ -316,21 +318,22 @@ export interface IExamStatsData {
   passRate: number;
 }
 
+
+
+// â”€â”€ API Response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 export interface IDashboardStats {
   totalStudents: number;
   activeStudents: number;
   totalExams: number;
-  totalRevenue: number;
-  recentPayments: IPayment[];
+  publishedExams: number;
   examAttempts: number;
   averageScore: number;
   pendingDoubts: number;
-  dailyVisitors: number;
-  revenueData: IRevenueData[];
-  studentGrowth: IStudentGrowthData[];
+  totalCategories: number;
+  studentGrowth: { month: string; students: number }[];
+  recentStudents: any[];
 }
-
-// ── API Response ──────────────────────────────────────────────
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
@@ -344,7 +347,7 @@ export interface ApiResponse<T = unknown> {
   };
 }
 
-// ── Exam Builder Steps ────────────────────────────────────────
+// â”€â”€ Exam Builder Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface ExamStep1Data {
   title: string;
   description: string;
@@ -376,7 +379,7 @@ export interface ExamBuilderData extends ExamStep1Data, ExamStep2Data {
   questions: IQuestion[];
 }
 
-// ── Pagination ────────────────────────────────────────────────
+// â”€â”€ Pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface PaginationParams {
   page?: number;
   limit?: number;
@@ -386,7 +389,7 @@ export interface PaginationParams {
   sort?: string;
 }
 
-// ── Exam Security ─────────────────────────────────────────────
+// â”€â”€ Exam Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface ExamSecurityState {
   tabSwitchCount: number;
   fullscreenExitCount: number;
@@ -394,3 +397,4 @@ export interface ExamSecurityState {
   violations: IViolation[];
   isAutoSubmitted: boolean;
 }
+

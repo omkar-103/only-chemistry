@@ -22,8 +22,10 @@ export interface IUserDocument extends Document {
   lastLogin?: Date;
   lastActive?: Date;
   totalTimeOnSite: number; // seconds
-  // Purchased exams
+  // Purchased exams (legacy — kept for backward compat)
   purchasedExams: mongoose.Types.ObjectId[];
+  // Category-based access (admin-assigned)
+  assignedCategories: string[];
   // Device info (from last login)
   deviceInfo?: {
     device: string;
@@ -94,6 +96,8 @@ const UserSchema = new Schema<IUserDocument>(
     lastActive: Date,
     totalTimeOnSite: { type: Number, default: 0 },
     purchasedExams: [{ type: Schema.Types.ObjectId, ref: "Exam" }],
+    // Category-based access: admin assigns course names to students
+    assignedCategories: { type: [String], default: [] },
     deviceInfo: {
       device: String,
       browser: String,

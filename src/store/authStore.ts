@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "rhg-auth",
+      name: "oc-auth",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user:            state.user,

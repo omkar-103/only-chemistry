@@ -114,7 +114,8 @@ export async function POST(req: NextRequest) {
           mobile: user.mobile,
           role: user.role,
           avatar: user.avatar,
-          purchasedExams: user.purchasedExams,
+          purchasedExams: user.purchasedExams || [],
+          assignedCategories: user.assignedCategories || [],
         },
       },
     });

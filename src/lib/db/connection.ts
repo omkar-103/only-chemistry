@@ -1,242 +1,121 @@
 // ============================================================
-// MongoDB Connection — with Auto In-Memory Server + Demo Seed
+// MongoDB Connection — Only Chemistry
+// Connects to MongoDB Atlas using MONGODB_URI from environment
 // ============================================================
 
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/rhg-exam-portal";
-const IS_DEV = process.env.NODE_ENV !== "production";
+// ── Safe URI resolution (no in-memory fallback) ───────────────
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error("❌ [DB] MONGODB_URI is not defined in environment variables.");
+  console.error("   Add MONGODB_URI to your .env.local file.");
+}
+
+// Extract hostname for safe logging (no credentials exposed)
+function getClusterHost(uri: string): string {
+  try {
+    // For SRV URIs: mongodb+srv://user:pass@cluster.host.net/db
+    const withoutScheme = uri.replace(/^mongodb(\+srv)?:\/\//, "");
+    const atIndex = withoutScheme.indexOf("@");
+    if (atIndex !== -1) {
+      const hostPart = withoutScheme.slice(atIndex + 1);
+      return hostPart.split("/")[0]; // just the cluster hostname
+    }
+    return "unknown-host";
+  } catch {
+    return "unknown-host";
+  }
+}
 
 declare global {
   // eslint-disable-next-line no-var
   var __mongoCache: {
     conn: typeof mongoose | null;
     promise: Promise<typeof mongoose> | null;
-    memServer: any | null;
-    seeded: boolean;
   };
 }
 
 if (!global.__mongoCache) {
-  global.__mongoCache = { conn: null, promise: null, memServer: null, seeded: false };
+  global.__mongoCache = { conn: null, promise: null };
 }
 const cached = global.__mongoCache;
 
-// ── Resolve the final URI (memory-server fallback for dev) ────
-async function resolveURI(): Promise<string> {
-  // Atlas SRV — use as-is
-  if (MONGODB_URI.startsWith("mongodb+srv://")) {
-    return MONGODB_URI;
-  }
-
-  // In dev with localhost URI → skip connection test, go straight to memory server
-  if (IS_DEV) {
-    if (!cached.memServer) {
-      console.log("🧪 [DB] Starting In-Memory MongoDB (no install required)...");
-      const { MongoMemoryServer } = await import("mongodb-memory-server");
-      cached.memServer = await MongoMemoryServer.create({
-        instance: { dbName: "rhg-exam-portal" },
-      });
-      const uri = cached.memServer.getUri();
-      console.log("✅ [DB] In-Memory MongoDB ready:", uri);
-      console.log("💡 [DB] Demo credentials will be seeded automatically on first request.");
-    }
-    return cached.memServer.getUri();
-  }
-
-  return MONGODB_URI;
-}
-
 export async function connectDB(): Promise<typeof mongoose> {
+  // Return existing connection if healthy
   if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
+  // Wait for in-flight connection
   if (cached.promise) {
     cached.conn = await cached.promise;
     return cached.conn;
   }
 
-  cached.promise = (async () => {
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
-    }
+  if (!MONGODB_URI) {
+    throw new Error("[DB] MONGODB_URI environment variable is not set.");
+  }
 
-    const uri = await resolveURI();
-    const instance = await mongoose.connect(uri, {
+  const clusterHost = getClusterHost(MONGODB_URI);
+  console.log(`🔄 [DB] Connecting to Atlas cluster: ${clusterHost}`);
+
+  // Disconnect stale connection
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+
+  cached.promise = mongoose
+    .connect(MONGODB_URI, {
       bufferCommands: true,
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 15000,
       socketTimeoutMS: 45000,
       family: 4,
-    });
-
-    const dbName = instance.connection.db?.databaseName ?? "rhg-exam-portal";
-    console.log(`✅ [DB] Connected — ${dbName}`);
-
-    // Auto-seed demo data BEFORE returning — ensures accounts exist on first request
-    // Note: We check DB for admin existence rather than a flag, because in-memory DB
-    // is wiped on process restart while the module cache (seeded flag) can persist in dev.
-    if (IS_DEV) {
-      try {
-        await seedDemoData();
-      } catch (e: any) {
-        console.warn("⚠️ [Seed] Failed:", e.message);
+    })
+    .then((instance) => {
+      const dbName = instance.connection.db?.databaseName ?? "only-chemistry";
+      console.log(`✅ [DB] Connected to Atlas — database: ${dbName}`);
+      setupHandlers(instance);
+      return instance;
+    })
+    .catch((err) => {
+      cached.promise = null;
+      const msg = (err as Error).message || String(err);
+      console.error(`❌ [DB] Connection FAILED: ${msg}`);
+      if (msg.includes("querySrv") || msg.includes("ENOTFOUND")) {
+        console.error("   ⚠  DNS resolution failed. Check your internet connection.");
+        console.error("   ⚠  Also verify that your IP is whitelisted in MongoDB Atlas Network Access.");
       }
-    }
-
-    setupHandlers(instance);
-    return instance;
-  })().catch((err) => {
-    cached.promise = null;
-    console.error("❌ [DB] Connection failed:", err.message);
-    if (err.message.includes("ECONNREFUSED") || err.message.includes("querySrv")) {
-      console.error("💡 [DB] Tip: Update MONGODB_URI in .env.local to a valid Atlas URI,");
-      console.error("         or ensure MongoDB is running locally.");
-    }
-    throw err;
-  });
+      if (msg.includes("Authentication failed") || msg.includes("auth")) {
+        console.error("   ⚠  Authentication failed. Verify MONGODB_USERNAME and MONGODB_PASSWORD.");
+      }
+      if (msg.includes("Server selection timed out")) {
+        console.error("   ⚠  Atlas server not reachable. Check network access settings in Atlas.");
+      }
+      throw err;
+    });
 
   cached.conn = await cached.promise;
   return cached.conn;
 }
 
-// ── Auto-seed admin + demo student ────────────────────────────
-async function seedDemoData() {
-  const bcrypt = await import("bcryptjs");
-
-  // Lazy-load models (they register themselves)
-  const User = (await import("@/lib/db/models/User")).default;
-
-  const adminExists = await User.findOne({ email: "admin@rhgconsultancy.com" });
-  if (adminExists) {
-    console.log("✅ [Seed] Demo data already exists — skipping.");
-    return;
-  }
-
-  const [adminHash, studentHash] = await Promise.all([
-    bcrypt.hash("Admin@RHG2024!", 10),
-    bcrypt.hash("Demo@1234!", 10),
-  ]);
-
-  await User.insertMany([
-    {
-      name: "Admin RHG",
-      email: "admin@rhgconsultancy.com",
-      mobile: "9000000001",
-      password: adminHash,
-      role: "admin",
-      isVerified: true,
-      isActive: true,
-      purchasedExams: [],
-      totalTimeOnSite: 0,
-      otpAttempts: 0,
-    },
-    {
-      name: "Demo Student",
-      email: "student@demo.com",
-      mobile: "9000000002",
-      password: studentHash,
-      role: "student",
-      isVerified: true,
-      isActive: true,
-      purchasedExams: [],
-      totalTimeOnSite: 0,
-      otpAttempts: 0,
-    },
-  ]);
-
-  // Seed demo categories
-  const Category = (await import("@/lib/db/models/Category")).default;
-  const catData = [
-    { name: "JEE Main",    icon: "⚛️", color: "#3B82F6", displayOrder: 1 },
-    { name: "JEE Advanced",icon: "🔬", color: "#8B5CF6", displayOrder: 2 },
-    { name: "GATE",        icon: "🎓", color: "#10B981", displayOrder: 3 },
-    { name: "CSIR NET",    icon: "🧪", color: "#EF4444", displayOrder: 4 },
-  ];
-  await Category.insertMany(catData.map(c => ({ ...c, isActive: true, description: "" })));
-
-  // Seed a demo published exam so the list is never empty
-  const Exam = (await import("@/lib/db/models/Exam")).default;
-  const admin = await User.findOne({ email: "admin@rhgconsultancy.com" });
-  await Exam.create({
-    title: "JEE Main Chemistry Mock Test — Demo",
-    description: "A sample chemistry exam covering Organic, Inorganic and Physical Chemistry. This is a demo exam pre-loaded for testing.",
-    category: "JEE Main",
-    subject: "Chemistry",
-    difficulty: "medium",
-    isFree: true,
-    price: 0,
-    status: "published",
-    totalDuration: 60,
-    passingPercentage: 40,
-    negativeMarkingEnabled: true,
-    maxAttempts: 3,
-    resultVisibility: "full",
-    showExplanations: true,
-    allowReattempt: true,
-    autoDistributeTime: true,
-    shuffleQuestions: false,
-    shuffleOptions: false,
-    createdBy: admin!._id,
-    questions: [
-      {
-        questionText: "Which of the following is the correct IUPAC name of CH₃-CH₂-CHO?",
-        questionType: "single",
-        options: [
-          { id: "A", text: "Propanal" },
-          { id: "B", text: "Propanone" },
-          { id: "C", text: "Butanal" },
-          { id: "D", text: "Ethanal" },
-        ],
-        correctAnswers: ["A"],
-        marks: 4,
-        negativeMarks: 1,
-        explanation: "CH₃-CH₂-CHO has 3 carbons with an aldehyde group. The IUPAC name is Propanal (prop = 3C, an = single bond, al = aldehyde).",
-        order: 0,
-      },
-      {
-        questionText: "The hybridisation of carbon in CO₂ is:",
-        questionType: "single",
-        options: [
-          { id: "A", text: "sp" },
-          { id: "B", text: "sp²" },
-          { id: "C", text: "sp³" },
-          { id: "D", text: "sp³d" },
-        ],
-        correctAnswers: ["A"],
-        marks: 4,
-        negativeMarks: 1,
-        explanation: "In CO₂, carbon forms 2 double bonds with oxygen. No lone pairs on C. So 2 regions of electron density → sp hybridisation.",
-        order: 1,
-      },
-      {
-        questionText: "Which of the following compounds shows optical isomerism?",
-        questionType: "single",
-        options: [
-          { id: "A", text: "CH₃CH₂CH₂Cl" },
-          { id: "B", text: "CH₃CHClCH₃" },
-          { id: "C", text: "CH₃CH(OH)COOH" },
-          { id: "D", text: "CH₂Cl₂" },
-        ],
-        correctAnswers: ["C"],
-        marks: 4,
-        negativeMarks: 1,
-        explanation: "Lactic acid (CH₃CH(OH)COOH) has an asymmetric carbon (chiral centre) bonded to 4 different groups, so it shows optical isomerism.",
-        order: 2,
-      },
-    ],
-  });
-
-  console.log("🌱 [Seed] Demo accounts created:");
-  console.log("   👤 Admin  → admin@rhgconsultancy.com / Admin@RHG2024!");
-  console.log("   👤 Student → student@demo.com / Demo@1234!");
-}
-
 function setupHandlers(mongooseInstance: typeof mongoose) {
   const conn = mongooseInstance.connection;
-  conn.on("disconnected", () => { cached.conn = null; cached.promise = null; });
-  conn.on("error", () => { cached.conn = null; cached.promise = null; });
+  conn.on("disconnected", () => {
+    console.warn("⚠️  [DB] Disconnected from Atlas");
+    cached.conn = null;
+    cached.promise = null;
+  });
+  conn.on("error", (err) => {
+    console.error("❌ [DB] Connection error:", err.message);
+    cached.conn = null;
+    cached.promise = null;
+  });
+  conn.on("reconnected", () => {
+    console.log("🔄 [DB] Reconnected to Atlas");
+  });
 }
 
 export async function checkDBHealth(): Promise<{ status: string; latency?: number }> {
