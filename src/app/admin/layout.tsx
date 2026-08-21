@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Users, BookOpen, CreditCard, MessageSquare,
+  LayoutDashboard, Users, BookOpen, MessageSquare,
   PlayCircle, Tag, BarChart3, Shield, Settings, FlaskConical,
   Menu, X, LogOut, ChevronRight, Bell, Activity,
 } from "lucide-react";
@@ -21,7 +21,6 @@ const NAV_SECTIONS = [
       { label: "Dashboard",        href: ROUTES.ADMIN.DASHBOARD,      icon: LayoutDashboard },
       { label: "Students",         href: ROUTES.ADMIN.STUDENTS,       icon: Users },
       { label: "Exams",            href: ROUTES.ADMIN.EXAMS,          icon: BookOpen },
-      { label: "Payments",         href: ROUTES.ADMIN.PAYMENTS,       icon: CreditCard },
     ]
   },
   {
@@ -95,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div>
             <div className="font-display font-bold text-sm text-sidebar-foreground flex items-center gap-1.5">
-              RHG<span className="text-sidebar-primary">CS</span>
+              Only<span className="text-sidebar-primary">Chemistry</span>
               <span className="px-1.5 py-0.5 text-[10px] uppercase font-semibold bg-sidebar-primary/20 text-sidebar-primary rounded">Admin</span>
             </div>
             <div className="text-xs text-sidebar-foreground/50">Exam & LMS Portal</div>

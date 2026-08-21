@@ -18,24 +18,27 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://onlychemistry.com"),
   title: {
-    default: "RHGConsultancyService — Premier Chemistry Education Platform",
-    template: "%s | RHGConsultancyService",
+    default: "Only Chemistry — Premier Chemistry Education Platform",
+    template: "%s | Only Chemistry",
   },
   description:
-    "Prepare for JEE Main, JEE Advanced, GATE, MHT-CET, CSIR NET, UGC NET, and SET with expert-curated exams, learning videos, and personalized study support.",
+    "Prepare for JEE Main, JEE Advanced, GATE, MHT-CET, CSIR NET, UGC NET, and SET with expert-curated exams, learning videos, and personalized study support. Only Chemistry — OnlyChemistry.com",
   keywords: [
+    "Only Chemistry", "OnlyChemistry", "onlychemistry.com",
     "JEE Main", "JEE Advanced", "GATE", "MHT-CET", "CSIR NET", "UGC NET", "SET",
     "chemistry exam", "online exam portal", "chemistry education",
   ],
-  authors: [{ name: "RHGConsultancyService" }],
-  creator: "RHGConsultancyService",
+  authors: [{ name: "Only Chemistry" }],
+  creator: "Only Chemistry",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    siteName: "RHGConsultancyService",
-    title: "RHGConsultancyService — Premier Chemistry Education Platform",
-    description: "Expert chemistry exam preparation for JEE, GATE, NET and more.",
+    url: "https://onlychemistry.com",
+    siteName: "Only Chemistry",
+    title: "Only Chemistry — Premier Chemistry Education Platform",
+    description: "Expert chemistry exam preparation for JEE, GATE, NET and more. OnlyChemistry.com",
   },
   robots: { index: true, follow: true },
 };

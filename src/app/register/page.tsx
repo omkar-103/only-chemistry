@@ -105,7 +105,7 @@ export default function RegisterPage() {
           <div className="flex items-center justify-center gap-3 mb-8">
             <FlaskConical className="h-12 w-12 text-gold-400" />
             <span className="font-display font-black text-3xl text-white">
-              RHG<span className="text-gold-400">CS</span>
+              Only<span className="text-gold-400">Chemistry</span>
             </span>
           </div>
           <h1 className="text-4xl font-display font-black text-white mb-4">
@@ -142,7 +142,7 @@ export default function RegisterPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-6 lg:hidden">
             <FlaskConical className="h-7 w-7 text-primary" />
-            <span className="font-display font-black text-lg">RHGConsultancyService</span>
+            <span className="font-display font-black text-lg">Only Chemistry</span>
           </div>
 
           <AnimatePresence mode="wait">

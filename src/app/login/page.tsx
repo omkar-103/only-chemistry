@@ -66,7 +66,7 @@ function LoginForm() {
           <div className="flex items-center justify-center gap-3 mb-8">
             <FlaskConical className="h-12 w-12 text-gold-400" />
             <span className="font-display font-black text-3xl text-white">
-              RHG<span className="text-gold-400">CS</span>
+              Only<span className="text-gold-400">Chemistry</span>
             </span>
           </div>
           <h1 className="text-4xl font-display font-black text-white mb-4">
@@ -101,7 +101,7 @@ function LoginForm() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <FlaskConical className="h-8 w-8 text-primary" />
-            <span className="font-display font-black text-xl">RHGConsultancyService</span>
+            <span className="font-display font-black text-xl">Only Chemistry</span>
           </div>
 
           <div className="mb-8">

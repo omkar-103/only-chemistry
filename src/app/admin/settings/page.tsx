@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Settings, Save, Database, Mail, CreditCard, Shield, FlaskConical } from "lucide-react";
+import { Save, Mail, Shield, FlaskConical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ export default function AdminSettingsPage() {
 
   const saveSettings = async () => {
     setSaving(true);
-    // Simulate save
     await new Promise((r) => setTimeout(r, 800));
     setSaving(false);
     toast({ title: "Settings saved", variant: "success" });
@@ -28,7 +27,7 @@ export default function AdminSettingsPage() {
       fields: [
         { id: "site-name", label: "Site Name", value: APP_NAME, type: "text" },
         { id: "site-tagline", label: "Tagline", value: "Premier Chemistry Education Platform", type: "text" },
-        { id: "contact-email", label: "Contact Email", value: "admin@rhgcs.in", type: "email" },
+        { id: "contact-email", label: "Contact Email", value: "admin@onlychemistry.com", type: "email" },
         { id: "support-mobile", label: "Support Mobile", value: "+91 9000000000", type: "tel" },
       ],
     },
@@ -39,17 +38,8 @@ export default function AdminSettingsPage() {
       fields: [
         { id: "smtp-host", label: "SMTP Host", value: "smtp.gmail.com", type: "text" },
         { id: "smtp-port", label: "SMTP Port", value: "587", type: "number" },
-        { id: "smtp-user", label: "SMTP Username", value: "noreply@rhgcs.in", type: "email" },
+        { id: "smtp-user", label: "SMTP Username", value: "noreply@onlychemistry.com", type: "email" },
         { id: "smtp-pass", label: "SMTP Password", value: "", type: "password" },
-      ],
-    },
-    {
-      icon: CreditCard,
-      title: "Payment Gateway",
-      description: "Razorpay API credentials for payment processing",
-      fields: [
-        { id: "rzp-key-id", label: "Razorpay Key ID", value: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "", type: "text" },
-        { id: "rzp-mode", label: "Mode", value: "test", type: "text" },
       ],
     },
     {

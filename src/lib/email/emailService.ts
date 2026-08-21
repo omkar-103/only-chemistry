@@ -30,8 +30,8 @@ export async function sendOTPEmail(
 ): Promise<EmailResult> {
   const subject =
     type === "email_verify"
-      ? "Verify Your Email — RHGConsultancyService"
-      : "Password Reset OTP — RHGConsultancyService";
+      ? "Verify Your Email — Only Chemistry"
+      : "Password Reset OTP — Only Chemistry";
 
   const html = generateOTPEmailHTML(otp, type, name);
 
@@ -136,7 +136,7 @@ function generateOTPEmailHTML(
           <tr>
             <td style="background:linear-gradient(135deg,#0a0f2c,#192a6c);padding:40px;text-align:center;">
               <h1 style="color:#d4af37;margin:0;font-size:28px;font-weight:800;letter-spacing:-0.5px;">
-                RHG Consultancy Service
+                Only Chemistry
               </h1>
               <p style="color:rgba(255,255,255,0.7);margin:8px 0 0;font-size:14px;">
                 Premier Chemistry Education Platform
@@ -160,7 +160,7 @@ function generateOTPEmailHTML(
               </p>
               <hr style="border:none;border-top:1px solid #eee;margin:0 0 24px;">
               <p style="color:#aaa;font-size:12px;margin:0;text-align:center;">
-                © ${new Date().getFullYear()} RHGConsultancyService. All rights reserved.
+                © ${new Date().getFullYear()} Only Chemistry. All rights reserved.
               </p>
             </td>
           </tr>

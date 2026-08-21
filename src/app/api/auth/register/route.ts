@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       email,
       mobile,
       password,
-      isVerified: IS_DEV ? true : false, // ← auto-verify in dev
+      isVerified: IS_DEV ? true : false,
     });
 
     if (!IS_DEV) {
@@ -71,8 +71,9 @@ export async function POST(req: NextRequest) {
       });
 
       await Notification.create({
-        userId: user._id, type: "registration",
-        title: "Welcome to RHGConsultancyService!",
+        userId: user._id,
+        type: "registration",
+        title: "Welcome to Only Chemistry!",
         message: "Your account has been created. Please verify your email to get started.",
       });
 
@@ -82,8 +83,9 @@ export async function POST(req: NextRequest) {
 
     // Dev mode: auto-verified → user can login immediately
     await Notification.create({
-      userId: user._id, type: "registration",
-      title: "Welcome to RHGConsultancyService!",
+      userId: user._id,
+      type: "registration",
+      title: "Welcome to Only Chemistry!",
       message: "Your account is ready. Start exploring exams!",
     }).catch(() => {});
 
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     return successResponse(
       { email, name, autoVerified: true },
-      "Registration successful! You can now log in directly (dev mode — email verification skipped).",
+      "Registration successful! You can now log in directly.",
       201
     );
   } catch (error) {

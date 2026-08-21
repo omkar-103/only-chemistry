@@ -2,9 +2,9 @@
 // Application Constants
 // ============================================================
 
-export const APP_NAME = "RHGConsultancyService";
+export const APP_NAME = "Only Chemistry";
 export const APP_TAGLINE = "Premier Chemistry Education Platform";
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://onlychemistry.com";
 
 // ── Exam Categories ───────────────────────────────────────────
 export const EXAM_CATEGORIES = [
@@ -107,7 +107,6 @@ export const ROUTES = {
     STUDENTS: "/admin/students",
     EXAMS: "/admin/exams",
     EXAM_CREATE: "/admin/exams/create",
-    PAYMENTS: "/admin/payments",
     DOUBTS: "/admin/doubts",
     VIDEOS: "/admin/videos",
     CATEGORIES: "/admin/categories",
@@ -130,7 +129,6 @@ export const STUDENT_NAV_ITEMS = [
   { label: "Results", href: ROUTES.STUDENT.RESULTS, icon: "Trophy" },
   { label: "Learning Videos", href: ROUTES.STUDENT.VIDEOS, icon: "PlayCircle" },
   { label: "My Doubts", href: ROUTES.STUDENT.DOUBTS, icon: "MessageSquare" },
-  { label: "Payments", href: ROUTES.STUDENT.PAYMENTS, icon: "CreditCard" },
   { label: "Profile", href: ROUTES.STUDENT.PROFILE, icon: "User" },
 ] as const;
 
@@ -138,10 +136,10 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: ROUTES.ADMIN.DASHBOARD, icon: "LayoutDashboard" },
   { label: "Students", href: ROUTES.ADMIN.STUDENTS, icon: "Users" },
   { label: "Exams", href: ROUTES.ADMIN.EXAMS, icon: "BookOpen" },
-  { label: "Payments", href: ROUTES.ADMIN.PAYMENTS, icon: "CreditCard" },
   { label: "Student Doubts", href: ROUTES.ADMIN.DOUBTS, icon: "MessageSquare" },
   { label: "Learning Videos", href: ROUTES.ADMIN.VIDEOS, icon: "PlayCircle" },
   { label: "Categories", href: ROUTES.ADMIN.CATEGORIES, icon: "Tag" },
+  { label: "Notifications", href: ROUTES.ADMIN.NOTIFICATIONS, icon: "Bell" },
   { label: "Analytics", href: ROUTES.ADMIN.ANALYTICS, icon: "BarChart3" },
   { label: "Audit Logs", href: ROUTES.ADMIN.AUDIT_LOGS, icon: "Shield" },
   { label: "Settings", href: ROUTES.ADMIN.SETTINGS, icon: "Settings" },

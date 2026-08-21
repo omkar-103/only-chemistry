@@ -25,7 +25,7 @@ export default function HomePage() {
           <Link href="/" className="flex items-center gap-2">
             <FlaskConical className="h-7 w-7 text-gold-400" />
             <span className="font-display font-bold text-lg text-white">
-              RHG<span className="text-gold-400">CS</span>
+              Only<span className="text-gold-400">Chemistry</span>
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-white/70">
@@ -86,7 +86,7 @@ export default function HomePage() {
               className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 leading-relaxed"
             >
               Professional exam preparation for JEE Main, JEE Advanced, GATE, MHT-CET, CSIR NET, UGC NET & SET.
-              Powered by expert chemistry faculty at RHGConsultancyService.
+              Powered by expert chemistry faculty at Only Chemistry.
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -188,7 +188,7 @@ export default function HomePage() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-display font-black text-foreground mb-4">
-              Why Choose <span className="gradient-text-navy dark:gradient-text">RHGConsultancyService?</span>
+              Why Choose <span className="gradient-text-navy dark:gradient-text">Only Chemistry?</span>
             </h2>
           </motion.div>
 
@@ -226,8 +226,8 @@ export default function HomePage() {
               },
               {
                 icon: <Award className="h-7 w-7" />,
-                title: "Flexible Access",
-                desc: "Free and paid exam options with instant Razorpay-powered purchase and immediate exam access.",
+                title: "Category-Based Access",
+                desc: "Access exams and videos based on your assigned course categories. Admin-controlled access ensures you always see relevant content for your preparation.",
                 color: "text-rose-600 bg-rose-100 dark:bg-rose-900/30",
               },
             ].map((feature, i) => (
@@ -263,7 +263,7 @@ export default function HomePage() {
               <span className="gradient-text">Chemistry Journey?</span>
             </h2>
             <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto">
-              Join thousands of students preparing for their dream careers with RHGConsultancyService.
+              Join thousands of students preparing for their dream careers with Only Chemistry.
             </p>
             <Link href={ROUTES.REGISTER}>
               <Button variant="gold" size="xl" className="group">
@@ -281,12 +281,15 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <FlaskConical className="h-6 w-6 text-gold-400" />
             <span className="font-display font-bold text-white">
-              RHG<span className="text-gold-400">ConsultancyService</span>
+              Only<span className="text-gold-400">Chemistry</span>
             </span>
           </div>
-          <p className="text-white/40 text-sm">
-            © {new Date().getFullYear()} RHGConsultancyService. All rights reserved.
-          </p>
+          <div className="text-center">
+            <p className="text-white/40 text-sm">
+              © {new Date().getFullYear()} Only Chemistry. All rights reserved.
+            </p>
+            <p className="text-white/30 text-xs mt-1">Website created by Omkar Parelkar.</p>
+          </div>
           <div className="flex items-center gap-4 text-sm text-white/40">
             <Link href="#" className="hover:text-white/70 transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-white/70 transition-colors">Terms</Link>

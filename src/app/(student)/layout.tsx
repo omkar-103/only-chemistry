@@ -6,8 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BookOpen, Trophy, PlayCircle, MessageSquare,
-  CreditCard, User, FlaskConical, Menu, X, LogOut, Bell,
-  ChevronRight, Search, Sun, Moon, Settings,
+  User, FlaskConical, Menu, X, LogOut, Bell,
+  ChevronRight, Sun, Moon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
@@ -21,7 +21,6 @@ const NAV_ITEMS = [
   { label: "Learning Videos", href: "/videos",         icon: PlayCircle },
   { label: "My Doubts",       href: "/doubts",         icon: MessageSquare },
   { label: "Notifications",   href: "/notifications",  icon: Bell },
-  { label: "Payments",        href: "/payments",       icon: CreditCard },
   { label: "Profile",         href: "/profile",        icon: User },
 ];
 
@@ -195,7 +194,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </div>
           <div>
             <div className="font-display font-bold text-sm text-sidebar-foreground leading-none">
-              RHG<span className="text-sidebar-primary">CS</span>
+              Only<span className="text-sidebar-primary">Chemistry</span>
             </div>
             <div className="text-[11px] text-sidebar-foreground/50 mt-0.5">Student Portal</div>
           </div>
