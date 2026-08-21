@@ -314,7 +314,7 @@ export default function DoubtsPage() {
                               </div>
                               <Button
                                 variant="outline"
-                                size="xs"
+                                size="sm"
                                 onClick={() => {
                                   navigator.clipboard.writeText(doubt.reply);
                                   toast({ title: "Answer copied to clipboard!", variant: "success" });

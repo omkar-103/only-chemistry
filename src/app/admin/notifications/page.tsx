@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Send, Users, Tag, Search, Megaphone, Clock, CheckCircle2 } from "lucide-react";
+import { Bell, Send, Users, Tag, Megaphone, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import { toast } from "@/hooks/useToast";
-import { EXAM_CATEGORIES } from "@/constants";
-import { DemoBanner } from "@/components/ui/DemoOverlay";
 
 const PRIORITY_CONFIG = {
   low: { label: "Low", color: "text-muted-foreground", bg: "bg-muted" },
@@ -37,13 +35,20 @@ export default function AdminNotificationsPage() {
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loadingH, setLoadingH] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
+
   const set = (k: keyof typeof DEFAULT_FORM, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   useEffect(() => {
-    // Load recent broadcast history (last 20 notifications of type announcement)
+    // Load categories
+    axios.get("/api/admin/categories?limit=100")
+      .then(r => setCategories(r.data.data || []))
+      .catch(() => {});
+
+    // Load recent broadcast history
     axios.get("/api/admin/notifications/history")
       .then(r => setHistory(Array.isArray(r.data.data) ? r.data.data : []))
-      .catch(() => { })
+      .catch(() => {})
       .finally(() => setLoadingH(false));
   }, []);
 
@@ -62,29 +67,24 @@ export default function AdminNotificationsPage() {
         category: form.category || undefined,
       });
       toast({ title: res.data.message || "Announcement sent!", variant: "success" });
+      const sentItem = { ...form, createdAt: new Date().toISOString(), _id: Date.now().toString() };
       setForm(DEFAULT_FORM);
-      // Prepend to local history
-      setHistory(h => [{ ...form, createdAt: new Date().toISOString(), _id: Date.now().toString() }, ...h]);
+      setHistory(h => [sentItem, ...h]);
     } catch (e: any) {
       toast({ title: e.response?.data?.message || "Send failed", variant: "error" });
-    } finally { setSending(false); }
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-      {/* ── Demo Banner: top-of-page warning, sidebar stays fully usable ── */}
-      <DemoBanner
-        title="Notification Management Disabled"
-        description="Notification delivery depends on backend communication services that are not configured in this demo environment."
-      />
-      {/* ── Existing UI: fully visible, all controls disabled ── */}
-      <div className="space-y-5 pointer-events-none select-none opacity-75">
-        <div>
-          <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
-          <p className="text-muted-foreground text-sm">Broadcast announcements to students</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
+        <p className="text-muted-foreground text-sm">Broadcast announcements to students</p>
+      </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6">
         {/* Broadcast Form */}
         <Card>
           <CardHeader>
@@ -94,96 +94,97 @@ export default function AdminNotificationsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input id="notif-title" label="Title *" placeholder="e.g. New Exam Available!"
-              value={form.title} onChange={e => set("title", e.target.value)} />
+            <Input
+              id="notif-title"
+              label="Title *"
+              placeholder="e.g. New Exam Available!"
+              value={form.title}
+              onChange={e => set("title", e.target.value)}
+            />
 
             <div>
               <label className="text-xs font-medium text-muted-foreground block mb-1.5">Message *</label>
-              <textarea rows={4} placeholder="Write your announcement message..."
-                value={form.message} onChange={e => set("message", e.target.value)}
+              <textarea
+                rows={4}
+                placeholder="Write your announcement message..."
+                value={form.message}
+                onChange={e => set("message", e.target.value)}
                 className="w-full border border-border rounded-xl px-3 py-2 text-sm bg-background text-foreground outline-none focus:ring-2 ring-primary/30 resize-none"
               />
               <p className="text-[10px] text-muted-foreground text-right mt-0.5">{form.message.length}/1000</p>
             </div>
 
-            <Input id="notif-link" label="Action Link (optional)" placeholder="/exams/exam-id"
-              value={form.link} onChange={e => set("link", e.target.value)} />
+            <Input
+              id="notif-link"
+              label="Action Link (optional)"
+              placeholder="/exams/exam-id"
+              value={form.link}
+              onChange={e => set("link", e.target.value)}
+            />
 
-            {/* Priority */}
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1.5">Priority</label>
-              <div className="flex gap-2">
-                {(["low", "medium", "high"] as const).map(p => {
-                  const cfg = PRIORITY_CONFIG[p];
-                  return (
-                    <button key={p}
+            {/* Priority + Target Category */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1.5">Priority</label>
+                <div className="flex gap-1.5">
+                  {(["low", "medium", "high"] as const).map(p => (
+                    <button
+                      key={p}
+                      type="button"
                       onClick={() => set("priority", p)}
-                      className={cn("px-3 py-1.5 rounded-full text-xs font-medium border capitalize transition-all",
-                        form.priority === p ? `${cfg.bg} ${cfg.color} border-transparent` : "border-border text-muted-foreground hover:border-primary/50"
+                      className={cn(
+                        "flex-1 py-1.5 rounded-lg text-xs font-medium border capitalize transition-colors",
+                        form.priority === p
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-muted-foreground hover:bg-muted"
                       )}
-                    >{cfg.label}</button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Category targeting */}
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1.5">
-                <Tag className="h-3 w-3 inline mr-1" />Target Category (leave empty for all students)
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => set("category", "")}
-                  className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                    !form.category ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"
-                  )}
-                >
-                  <Users className="h-3 w-3 inline mr-1" />All Students
-                </button>
-                {EXAM_CATEGORIES.map(cat => (
-                  <button key={cat.value}
-                    onClick={() => set("category", cat.value === form.category ? "" : cat.value)}
-                    className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                      form.category === cat.value ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"
-                    )}
-                  >{cat.icon} {cat.label}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* Preview */}
-            {form.title && (
-              <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                <p className="text-[10px] text-muted-foreground mb-2 uppercase tracking-wide">Preview</p>
-                <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Bell className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{form.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{form.message || "Message preview..."}</p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-1">
-                      → {form.category ? `${form.category} students` : "All students"} · {PRIORITY_CONFIG[form.priority].label} priority
-                    </p>
-                  </div>
+                    >
+                      {p}
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
 
-            <Button variant="gold" className="w-full gap-2" onClick={sendBroadcast} isLoading={sending} loadingText="Sending...">
-              <Send className="h-4 w-4" />
-              Send Announcement
-            </Button>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground block mb-1.5">Target Course / Category</label>
+                <select
+                  value={form.category}
+                  onChange={e => set("category", e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-border bg-background text-foreground text-xs outline-none focus:ring-2 ring-primary/30"
+                >
+                  <option value="">All Categories (Broadcast)</option>
+                  {categories.map(c => (
+                    <option key={c._id || c.name} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                variant="gold"
+                className="w-full gap-2"
+                onClick={sendBroadcast}
+                isLoading={sending}
+                loadingText="Broadcasting..."
+                id="send-broadcast-btn"
+              >
+                <Send className="h-4 w-4" />
+                Send Announcement to Students
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* History */}
+        {/* Broadcast History */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-4 w-4 text-primary" />
-              Recent Broadcasts
+            <CardTitle className="flex items-center justify-between text-base">
+              <span className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                Broadcast History
+              </span>
+              <span className="text-xs font-normal text-muted-foreground">{history.length} sent</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -219,8 +220,7 @@ export default function AdminNotificationsPage() {
             )}
           </CardContent>
         </Card>
-        </div>{/* end grid */}
-      </div>{/* end pointer-events-none wrapper */}
+      </div>
     </motion.div>
   );
 }
