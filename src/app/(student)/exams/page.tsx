@@ -3,32 +3,28 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  Search, Filter, BookOpen, Clock, Users, ChevronDown,
-  Star, Lock, CheckCircle2, PlayCircle, SlidersHorizontal,
-  Trophy, Zap, BarChart2, ArrowRight,
+  Search, BookOpen, Clock, Users,
+  CheckCircle2, PlayCircle, SlidersHorizontal,
+  Trophy, Zap, BarChart2, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { DIFFICULTY_CONFIG, EXAM_CATEGORIES, CURRENCY_SYMBOL, ROUTES } from "@/constants";
+import { DIFFICULTY_CONFIG, EXAM_CATEGORIES } from "@/constants";
 import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { toast } from "@/hooks/useToast";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 const SORT_OPTIONS = [
   { value: "newest",    label: "Newest First" },
   { value: "oldest",    label: "Oldest First" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc",label: "Price: High to Low" },
-  { value: "popular",  label: "Most Popular" },
+  { value: "popular",   label: "Most Popular" },
 ];
 
-function ExamCard({ exam, isPurchased }: { exam: any; isPurchased: boolean }) {
+function ExamCard({ exam, hasAccess }: { exam: any; hasAccess: boolean }) {
   const diff = DIFFICULTY_CONFIG[exam.difficulty as keyof typeof DIFFICULTY_CONFIG];
-  const priceINR = exam.isFree ? 0 : Math.round(exam.price / 100);
 
   return (
     <motion.div
@@ -53,10 +49,10 @@ function ExamCard({ exam, isPurchased }: { exam: any; isPurchased: boolean }) {
           <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
             {exam.isFree ? (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">FREE</span>
-            ) : isPurchased ? (
-              <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">Purchased</span>
+            ) : hasAccess ? (
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">Access Granted</span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full bg-gold-500 text-white text-[10px] font-bold uppercase shadow-sm">{CURRENCY_SYMBOL}{priceINR}</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-muted/90 text-muted-foreground text-[10px] font-bold uppercase shadow-sm">Category Required</span>
             )}
             <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shadow-sm", diff?.bg, diff?.color)}>
               {diff?.label}
@@ -111,7 +107,7 @@ function ExamCard({ exam, isPurchased }: { exam: any; isPurchased: boolean }) {
 
           {/* CTA */}
           <div className="mt-auto pt-1">
-            {exam.isFree || isPurchased ? (
+            {hasAccess ? (
               <Link href={`/exam/${exam._id}/instructions`} className="block">
                 <Button variant="gold" size="sm" className="w-full gap-1.5">
                   <PlayCircle className="h-3.5 w-3.5" />
@@ -119,12 +115,10 @@ function ExamCard({ exam, isPurchased }: { exam: any; isPurchased: boolean }) {
                 </Button>
               </Link>
             ) : (
-              <Link href={`/exams/${exam._id}`} className="block">
-                <Button variant="default" size="sm" className="w-full gap-1.5">
-                  <Lock className="h-3.5 w-3.5" />
-                  Purchase — {CURRENCY_SYMBOL}{priceINR}
-                </Button>
-              </Link>
+              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs text-muted-foreground cursor-not-allowed opacity-80" disabled>
+                <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+                Category &quot;{exam.category}&quot; Not Assigned
+              </Button>
             )}
           </div>
         </CardContent>
@@ -147,7 +141,8 @@ export default function ExamsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const LIMIT = 12;
 
-  const purchasedExams: string[] = user?.purchasedExams as any[] || [];
+  const assignedCategories: string[] = user?.assignedCategories || [];
+  const purchasedExams: string[] = (user?.purchasedExams as any[]) || [];
 
   const fetchExams = useCallback(() => {
     setLoading(true);
@@ -182,17 +177,27 @@ export default function ExamsPage() {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
       {/* Page header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-display font-black text-foreground">Exam Library</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             {loading ? "Loading..." : `${total} exam${total !== 1 ? "s" : ""} available`}
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-          <Trophy className="h-3.5 w-3.5 text-gold-500" />
-          {purchasedExams.length} purchased
-        </div>
+        {assignedCategories.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">Assigned Courses:</span>
+            {assignedCategories.map((c) => (
+              <span key={c} className="px-2 py-0.5 bg-primary/10 text-primary rounded-full font-medium">
+                {c}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+            Free exams available · Contact admin for full course category access
+          </div>
+        )}
       </div>
 
       {/* Search + filter bar */}
@@ -264,18 +269,15 @@ export default function ExamsPage() {
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Difficulty</p>
             <div className="flex gap-2">
-              {["", ...DIFFICULTIES].map(d => {
-                const cfg = d ? DIFFICULTY_CONFIG[d as keyof typeof DIFFICULTY_CONFIG] : null;
-                return (
-                  <button
-                    key={d || "all"}
-                    onClick={() => setDifficulty(d)}
-                    className={cn("px-3 py-1.5 rounded-full text-xs font-medium border capitalize transition-colors",
-                      difficulty === d ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/50 text-muted-foreground"
-                    )}
-                  >{d || "All"}</button>
-                );
-              })}
+              {["", ...DIFFICULTIES].map(d => (
+                <button
+                  key={d || "all"}
+                  onClick={() => setDifficulty(d)}
+                  className={cn("px-3 py-1.5 rounded-full text-xs font-medium border capitalize transition-colors",
+                    difficulty === d ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/50 text-muted-foreground"
+                  )}
+                >{d || "All"}</button>
+              ))}
             </div>
           </div>
 
@@ -308,7 +310,7 @@ export default function ExamsPage() {
           <span className="text-muted-foreground font-medium">Active filters:</span>
           {search && (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-              Search: "{search}"
+              Search: &quot;{search}&quot;
               <button onClick={() => setSearch("")} className="hover:text-foreground">✕</button>
             </span>
           )}
@@ -372,13 +374,20 @@ export default function ExamsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {exams.map(exam => (
-            <ExamCard
-              key={exam._id}
-              exam={exam}
-              isPurchased={purchasedExams.includes(exam._id)}
-            />
-          ))}
+          {exams.map(exam => {
+            const hasAccess =
+              exam.isFree === true ||
+              assignedCategories.includes(exam.category) ||
+              purchasedExams.includes(exam._id);
+
+            return (
+              <ExamCard
+                key={exam._id}
+                exam={exam}
+                hasAccess={hasAccess}
+              />
+            );
+          })}
         </div>
       )}
 

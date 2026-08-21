@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BookOpen, Trophy, CreditCard, MessageSquare, PlayCircle, ArrowRight, Clock, Star } from "lucide-react";
+import { BookOpen, Trophy, MessageSquare, PlayCircle, ArrowRight, Clock, Star, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
@@ -42,8 +42,9 @@ export default function StudentDashboardPage() {
     { label: "My Results", href: ROUTES.STUDENT.RESULTS, icon: Trophy, color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
     { label: "Learning Videos", href: ROUTES.STUDENT.VIDEOS, icon: PlayCircle, color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
     { label: "My Doubts", href: ROUTES.STUDENT.DOUBTS, icon: MessageSquare, color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
-    { label: "Payments", href: ROUTES.STUDENT.PAYMENTS, icon: CreditCard, color: "bg-gold-100 text-gold-700 dark:bg-gold-900/30 dark:text-gold-400" },
+    { label: "My Profile", href: ROUTES.STUDENT.PROFILE, icon: User, color: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400" },
   ];
+
 
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
