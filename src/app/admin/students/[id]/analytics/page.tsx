@@ -117,7 +117,7 @@ export default function StudentAnalyticsPage() {
       pdf.setTextColor(212, 175, 55); // gold
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
-      pdf.text("RHGConsultancyService — Student Performance Report", 10, 13);
+      pdf.text("Only Chemistry — Student Performance Report", 10, 13);
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(8);
       pdf.text(`Generated: ${new Date().toLocaleString("en-IN")}`, w - 10, 13, { align: "right" });
@@ -434,7 +434,7 @@ export default function StudentAnalyticsPage() {
 
         {/* PDF footer watermark */}
         <div className="text-center text-xs text-muted-foreground/40 py-4">
-          RHGConsultancyService · Confidential Student Report · {new Date().toLocaleDateString("en-IN")}
+          Only Chemistry · Confidential Student Report · {new Date().toLocaleDateString("en-IN")}
         </div>
       </div>
     </motion.div>

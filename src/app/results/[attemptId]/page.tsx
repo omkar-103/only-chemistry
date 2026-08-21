@@ -48,7 +48,7 @@ export default function ResultPage() {
         {/* Header */}
         <div className="flex items-center gap-2 mb-2">
           <FlaskConical className="h-6 w-6 text-primary" />
-          <span className="font-display font-black text-foreground">RHGConsultancyService</span>
+          <span className="font-display font-black text-foreground">Only Chemistry</span>
         </div>
 
         {/* Score Card */}

@@ -134,7 +134,7 @@ export default function ExamPreviewPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <FlaskConical className="h-8 w-8 text-primary" />
-              <span className="font-display font-black text-xl text-foreground">RHGConsultancyService</span>
+              <span className="font-display font-black text-xl text-foreground">Only Chemistry</span>
             </div>
             <h1 className="text-2xl font-display font-black text-foreground mb-2">Exam Instructions</h1>
             <p className="text-muted-foreground">{exam.title}</p>
@@ -213,7 +213,7 @@ export default function ExamPreviewPage() {
         <div className="flex items-center gap-3">
           <FlaskConical className="h-5 w-5 text-gold-400 hidden sm:block" />
           <div>
-            <p className="text-xs text-white/60">RHGConsultancyService — Preview</p>
+            <p className="text-xs text-white/60">Only Chemistry — Preview</p>
             <p className="text-sm font-semibold truncate max-w-[300px]">{exam.title}</p>
           </div>
         </div>

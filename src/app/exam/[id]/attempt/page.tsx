@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock, AlertTriangle, ChevronLeft, ChevronRight,
-  Flag, Trash2, Send, Maximize, X, FlaskConical
+  Flag, Trash2, Send, X, FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/authStore";
 import { useExamSecurity } from "@/hooks/useExamSecurity";
 import { IQuestion } from "@/types";
-import { ROUTES, MAX_TAB_SWITCHES } from "@/constants";
+import { ROUTES } from "@/constants";
 import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 
@@ -25,7 +25,6 @@ interface ResponseState {
     isMarkedForReview: boolean;
     status:            QuestionStatus;
     timeTakenSeconds:  number;
-    // Analytics fields
     visitCount?:       number;
     answerChanged?:    boolean;
     visitedAt?:        Date;
@@ -70,11 +69,6 @@ export default function ExamAttemptPage({ params }: Params) {
   const timerRef        = useRef<NodeJS.Timeout | null>(null);
   const autoSaveRef     = useRef<NodeJS.Timeout | null>(null);
   const questionStartTime = useRef(Date.now());
-  // Ref so handleAutoSubmit always calls the LATEST handleSubmit even though
-  // handleAutoSubmit has empty deps (it must be stable for the security hook).
-  // Without this, handleAutoSubmit captures a stale handleSubmit from the initial
-  // render where examId="" and attemptId="", causing the submit to fail silently.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmitRef = useRef<(...args: any[]) => Promise<void>>(() => Promise.resolve());
 
   // ── Load Exam ────────────────────────────────────────────────
@@ -88,12 +82,10 @@ export default function ExamAttemptPage({ params }: Params) {
           setQuestions(questions);
           setExamData(r.data.data);
 
-          // Calculate remaining time
           const elapsed = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
           const totalSeconds = totalDuration * 60;
           setTimeLeft(Math.max(0, totalSeconds - elapsed));
 
-          // Initialize response state
           const initial: ResponseState = {};
           questions.forEach((q: IQuestion) => {
             initial[q._id as string] = {
@@ -104,7 +96,6 @@ export default function ExamAttemptPage({ params }: Params) {
             };
           });
 
-          // Restore existing responses
           if (r.data.data.responses) {
             r.data.data.responses.forEach((resp: any) => {
               const qId = resp.questionId;
@@ -148,16 +139,13 @@ export default function ExamAttemptPage({ params }: Params) {
   const handleAutoSubmit = useCallback((reason: string) => {
     setWarningMessage(`Your exam is being automatically submitted: ${reason.replace(/_/g, " ")}.`);
     setShowWarning(true);
-    // Use ref so we always call the current (non-stale) handleSubmit
     setTimeout(() => handleSubmitRef.current(true, true, reason), 2500);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleViolation = useCallback((_type: string, count: number, message: string) => {
     setWarningCount(count);
     setWarningMessage(message);
     setShowWarning(true);
-    // Auto-hide warning after 6s unless it's the final auto-submit warning
     if (!message.includes("automatically submitted")) {
       setTimeout(() => setShowWarning(false), 6000);
     }
@@ -170,10 +158,8 @@ export default function ExamAttemptPage({ params }: Params) {
     onViolation:  handleViolation,
   });
 
-  // ── Auto-enter fullscreen when exam loads ────────────────────
   useEffect(() => {
     if (!attemptId || !examId) return;
-    // Small delay so the page finishes rendering first
     const t = setTimeout(() => requestFullscreen(), 800);
     return () => clearTimeout(t);
   }, [attemptId, examId, requestFullscreen]);
@@ -221,11 +207,10 @@ export default function ExamAttemptPage({ params }: Params) {
         timeTakenSeconds: (resp?.timeTakenSeconds || 0) + timeTaken,
       });
     } catch {
-      // Silent fail — will retry on next save
+      // Silent fail
     }
   }, [questions, currentIdx, responses, attemptId, examId]);
 
-  // Auto-save every 30 seconds
   useEffect(() => {
     autoSaveRef.current = setInterval(saveCurrentResponse, 30000);
     return () => clearInterval(autoSaveRef.current!);
@@ -260,7 +245,6 @@ export default function ExamAttemptPage({ params }: Params) {
           ...prev[qId],
           selectedOptions: newSelected,
           status,
-          // Track if answer was changed after first selection
           answerChanged: hadAnswer,
           answeredAt: newSelected.length > 0 ? new Date() : prev[qId]?.answeredAt,
         } as any,
@@ -344,7 +328,6 @@ export default function ExamAttemptPage({ params }: Params) {
     }
   };
 
-  // Keep the ref current on every render — this is what makes handleAutoSubmit safe
   handleSubmitRef.current = handleSubmit;
 
   if (loading) {
@@ -362,8 +345,8 @@ export default function ExamAttemptPage({ params }: Params) {
   const currentResponse = responses[currentQuestion?._id as string];
   const answeredCount = Object.values(responses).filter((r) => r.selectedOptions.length > 0).length;
   const markedCount = Object.values(responses).filter((r) => r.isMarkedForReview).length;
-  const isTimeCritical = timeLeft < 180; // 3 min critical
-  const isTimeLow = timeLeft < 600; // 10 min warning
+  const isTimeCritical = timeLeft < 180;
+  const isTimeLow = timeLeft < 600;
 
   return (
     <div className="h-screen flex flex-col bg-muted/20 exam-fullscreen overflow-hidden">
@@ -372,7 +355,7 @@ export default function ExamAttemptPage({ params }: Params) {
         <div className="flex items-center gap-3">
           <FlaskConical className="h-5 w-5 text-gold-400 hidden sm:block" />
           <div className="min-w-0">
-            <p className="text-xs text-white/60">RHGConsultancyService</p>
+            <p className="text-xs text-white/60">Only Chemistry</p>
             <p className="text-sm font-semibold truncate max-w-[200px] sm:max-w-[400px]">
               {examData?.examTitle || "Exam"}
             </p>

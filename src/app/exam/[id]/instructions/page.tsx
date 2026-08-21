@@ -75,7 +75,7 @@ export default function ExamInstructionsPage({ params }: Params) {
         >
           <div className="flex items-center justify-center gap-2 mb-4">
             <FlaskConical className="h-8 w-8 text-primary" />
-            <span className="font-display font-black text-xl text-foreground">RHGConsultancyService</span>
+            <span className="font-display font-black text-xl text-foreground">Only Chemistry</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-display font-black text-foreground mb-2">
             Exam Instructions
