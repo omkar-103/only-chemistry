@@ -1,5 +1,5 @@
 // GET  /api/admin/students/[id] — student detail
-// PATCH /api/admin/students/[id] — toggle-status / update
+// PATCH /api/admin/students/[id] — toggle-status / assign-categories / update
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db/connection";
 import User from "@/lib/db/models/User";
@@ -33,6 +33,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const student = await User.findOne({ _id: id, role: "student" });
   if (!student) return errorResponse("Student not found", 404);
 
+  // ── Toggle active status ──────────────────────────────────────
   if (body.action === "toggle-status") {
     student.isActive = !student.isActive;
     await student.save();
@@ -53,7 +54,39 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     );
   }
 
-  // Generic field update
+  // ── Assign / update categories (admin only, no password access) ─
+  if (body.action === "assign-categories") {
+    if (!Array.isArray(body.assignedCategories)) {
+      return errorResponse("assignedCategories must be an array", 400);
+    }
+    const categories = (body.assignedCategories as unknown[])
+      .map((c) => (typeof c === "string" ? c.trim() : ""))
+      .filter(Boolean);
+
+    student.assignedCategories = categories;
+    await student.save();
+
+    await createAuditLog({
+      userId: authResult.user.userId,
+      action: "student_categories_assigned",
+      resource: "User",
+      resourceId: id,
+      details: {
+        studentEmail: student.email,
+        studentName: student.name,
+        categories,
+      },
+      ip: getClientIP(req),
+      severity: "info",
+    });
+
+    return successResponse(
+      { assignedCategories: student.assignedCategories },
+      "Categories updated successfully"
+    );
+  }
+
+  // ── Generic field update (safe fields only — password is NEVER allowed) ─
   const allowedFields = ["name", "mobile", "isActive", "isVerified"];
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
@@ -61,5 +94,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     }
   }
   await student.save();
-  return successResponse(student, "Student updated");
+  return successResponse(
+    await User.findById(student._id).select("-password -otp -otpExpiry -sessionToken").lean(),
+    "Student updated"
+  );
 }

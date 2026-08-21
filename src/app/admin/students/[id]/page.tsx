@@ -2,27 +2,146 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, UserCheck, UserX, Mail, Phone, Calendar,
-  BookOpen, Trophy, CreditCard, Clock, Shield
+  BookOpen, Trophy, Clock, Shield, Tag, X, Check, Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CURRENCY_SYMBOL } from "@/constants";
 import { toast } from "@/hooks/useToast";
 import axios from "axios";
 import { cn } from "@/lib/utils/cn";
 import { format } from "date-fns";
+import Link from "next/link";
+
+// ── Category Assignment Modal ─────────────────────────────────
+function CategoryModal({
+  student,
+  onClose,
+  onSaved,
+}: {
+  student: any;
+  onClose: () => void;
+  onSaved: (categories: string[]) => void;
+}) {
+  const [allCategories, setAllCategories] = useState<any[]>([]);
+  const [selected, setSelected] = useState<string[]>(student.assignedCategories || []);
+  const [saving, setSaving] = useState(false);
+  const [loadingCats, setLoadingCats] = useState(true);
+
+  useEffect(() => {
+    axios.get("/api/admin/categories?limit=100")
+      .then(r => setAllCategories(r.data.data || []))
+      .catch(() => setAllCategories([]))
+      .finally(() => setLoadingCats(false));
+  }, []);
+
+  const toggle = (name: string) =>
+    setSelected(prev => prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await axios.patch(`/api/admin/students/${student._id}`, {
+        action: "assign-categories",
+        assignedCategories: selected,
+      });
+      toast({
+        title: "Categories updated",
+        description: `${selected.length} categor${selected.length === 1 ? "y" : "ies"} assigned to ${student.name}`,
+        variant: "success",
+      });
+      onSaved(selected);
+      onClose();
+    } catch {
+      toast({ title: "Failed to update categories", variant: "error" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+        className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
+        <div className="flex items-start justify-between p-5 border-b border-border">
+          <div>
+            <h2 className="font-display font-black text-foreground text-lg">Manage Student Access</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              <span className="font-medium text-foreground">{student.name}</span> · {student.email}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors mt-0.5">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="p-5 max-h-72 overflow-y-auto">
+          {loadingCats ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : allCategories.length === 0 ? (
+            <p className="text-center text-muted-foreground text-sm py-6">
+              No categories found. Create them in{" "}
+              <Link href="/admin/categories" className="text-primary hover:underline">Admin → Categories</Link>.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-2">
+              {allCategories.map((cat: any) => {
+                const isSelected = selected.includes(cat.name);
+                return (
+                  <button
+                    key={cat._id}
+                    onClick={() => toggle(cat.name)}
+                    className={cn(
+                      "flex items-center gap-3 w-full px-4 py-3 rounded-xl border text-left transition-all duration-150",
+                      isSelected
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:border-primary/40 text-foreground hover:bg-muted/40"
+                    )}
+                  >
+                    <span className="text-lg shrink-0">{cat.icon || "📚"}</span>
+                    <span className="text-sm font-medium flex-1">{cat.name}</span>
+                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 p-5 border-t border-border bg-muted/20">
+          <span className="text-xs text-muted-foreground">
+            {selected.length} categor{selected.length === 1 ? "y" : "ies"} selected
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+            <Button variant="gold" size="sm" onClick={save} isLoading={saving} loadingText="Saving...">
+              Save Access
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function AdminStudentDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [student, setStudent] = useState<any>(null);
   const [attempts, setAttempts] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -30,12 +149,10 @@ export default function AdminStudentDetailPage() {
     Promise.all([
       axios.get(`/api/admin/students/${id}`),
       axios.get(`/api/results?studentId=${id}&limit=10`),
-      axios.get(`/api/payments?studentId=${id}&limit=10`),
     ])
-      .then(([s, a, p]) => {
+      .then(([s, a]) => {
         setStudent(s.data.data);
         setAttempts(a.data.data || []);
-        setPayments(p.data.data || []);
       })
       .catch(() => router.push("/admin/students"))
       .finally(() => setLoading(false));
@@ -73,11 +190,11 @@ export default function AdminStudentDetailPage() {
 
   if (!student) return null;
 
-  const totalSpent = payments.filter((p) => p.status === "paid").reduce((a, p) => a + p.amount, 0);
   const passedCount = attempts.filter((a) => a.isPassed).length;
   const avgScore = attempts.length
     ? Math.round(attempts.reduce((a, r) => a + (r.percentage || 0), 0) / attempts.length)
     : 0;
+  const assignedCats = student.assignedCategories || [];
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 max-w-4xl">
@@ -123,26 +240,37 @@ export default function AdminStudentDetailPage() {
                 )}
               </div>
             </div>
-            <Button
-              variant={student.isActive ? "outline" : "default"}
-              size="sm"
-              onClick={toggleStatus}
-              isLoading={toggling}
-              loadingText="Updating..."
-              className={cn(
-                "gap-2 shrink-0",
-                student.isActive
-                  ? "border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              )}
-              id="toggle-student-status"
-            >
-              {student.isActive ? (
-                <><UserX className="h-4 w-4" />Suspend</>
-              ) : (
-                <><UserCheck className="h-4 w-4" />Activate</>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCategoryModal(true)}
+                className="gap-1.5"
+              >
+                <Tag className="h-4 w-4 text-primary" />
+                Assign Categories
+              </Button>
+              <Button
+                variant={student.isActive ? "outline" : "default"}
+                size="sm"
+                onClick={toggleStatus}
+                isLoading={toggling}
+                loadingText="Updating..."
+                className={cn(
+                  "gap-2 shrink-0",
+                  student.isActive
+                    ? "border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                )}
+                id="toggle-student-status"
+              >
+                {student.isActive ? (
+                  <><UserX className="h-4 w-4" />Suspend</>
+                ) : (
+                  <><UserCheck className="h-4 w-4" />Activate</>
+                )}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -153,7 +281,7 @@ export default function AdminStudentDetailPage() {
           { label: "Exams Taken", value: attempts.length, icon: BookOpen, color: "text-blue-600" },
           { label: "Passed", value: passedCount, icon: Trophy, color: "text-green-600" },
           { label: "Avg Score", value: `${avgScore}%`, icon: Shield, color: "text-primary" },
-          { label: "Total Spent", value: `${CURRENCY_SYMBOL}${(totalSpent / 100).toFixed(0)}`, icon: CreditCard, color: "text-amber-600" },
+          { label: "Assigned Categories", value: assignedCats.length, icon: Tag, color: "text-amber-600" },
         ].map((s) => {
           const Icon = s.icon;
           return (
@@ -166,7 +294,7 @@ export default function AdminStudentDetailPage() {
         })}
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity & Category Access Grid */}
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Recent Exams */}
         <Card>
@@ -219,35 +347,45 @@ export default function AdminStudentDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Payments */}
+        {/* Assigned Categories */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-primary" />
-              Recent Payments
+              <Tag className="h-4 w-4 text-primary" />
+              Assigned Categories ({assignedCats.length})
             </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCategoryModal(true)}
+              className="text-xs h-7 gap-1"
+            >
+              Edit
+            </Button>
           </CardHeader>
           <CardContent>
-            {payments.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No purchases yet</p>
+            {assignedCats.length === 0 ? (
+              <div className="text-center py-8">
+                <Tag className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No categories assigned yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Assign categories to grant access to course exams & materials</p>
+                <Button
+                  variant="gold"
+                  size="sm"
+                  onClick={() => setShowCategoryModal(true)}
+                  className="mt-3 text-xs"
+                >
+                  Assign Categories
+                </Button>
+              </div>
             ) : (
-              <div className="space-y-2">
-                {payments.slice(0, 6).map((p) => (
-                  <div key={p._id} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {p.examId?.title || "Exam"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {p.createdAt ? format(new Date(p.createdAt), "dd MMM yyyy") : ""}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0 ml-2">
-                      <p className="text-sm font-bold text-green-600">
-                        {CURRENCY_SYMBOL}{(p.amount / 100).toFixed(2)}
-                      </p>
-                      <p className="text-xs text-muted-foreground capitalize">{p.status}</p>
-                    </div>
+              <div className="flex flex-wrap gap-2 py-2">
+                {assignedCats.map((cat: string) => (
+                  <div
+                    key={cat}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary font-medium text-sm"
+                  >
+                    <span>{cat}</span>
                   </div>
                 ))}
               </div>
@@ -255,6 +393,17 @@ export default function AdminStudentDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal */}
+      <AnimatePresence>
+        {showCategoryModal && (
+          <CategoryModal
+            student={student}
+            onClose={() => setShowCategoryModal(false)}
+            onSaved={(newCats) => setStudent((prev: any) => ({ ...prev, assignedCategories: newCats }))}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
