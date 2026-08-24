@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, User, Phone, FlaskConical, CheckCircle2, Shield } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone, FlaskConical, CheckCircle2, Shield, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { registerSchema, RegisterInput } from "@/lib/validators/schemas";
@@ -145,6 +145,15 @@ export default function RegisterPage() {
             <span className="font-display font-black text-lg">Only Chemistry</span>
           </div>
 
+          {/* Back to Home */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+
           <AnimatePresence mode="wait">
             {step === "register" ? (
               <motion.div
@@ -223,9 +232,9 @@ export default function RegisterPage() {
 
                   <p className="text-xs text-muted-foreground">
                     By creating an account, you agree to our{" "}
-                    <Link href="#" className="text-primary hover:underline">Terms of Service</Link>{" "}
+                    <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>{" "}
                     and{" "}
-                    <Link href="#" className="text-primary hover:underline">Privacy Policy</Link>.
+                    <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
                   </p>
 
                   <Button

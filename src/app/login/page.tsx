@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, FlaskConical, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, FlaskConical, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loginSchema, LoginInput } from "@/lib/validators/schemas";
@@ -103,6 +103,15 @@ function LoginForm() {
             <FlaskConical className="h-8 w-8 text-primary" />
             <span className="font-display font-black text-xl">Only Chemistry</span>
           </div>
+
+          {/* Back to Home */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
 
           <div className="mb-8">
             <h2 className="text-3xl font-display font-black text-foreground">Sign In</h2>

@@ -52,10 +52,15 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <Link href={ROUTES.LOGIN} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8 text-sm">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Login
-        </Link>
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+          <Link href={ROUTES.LOGIN} className="text-sm text-primary hover:underline">
+            Back to Login
+          </Link>
+        </div>
 
         <div className="mb-8">
           <h1 className="text-3xl font-display font-black text-foreground">
