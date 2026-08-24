@@ -4,9 +4,16 @@
 // Run with: npm run seed
 // ============================================================
 
+const dns = require("dns");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 require("dotenv").config({ path: ".env.local" });
+
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {
+  // ignore
+}
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const ADMIN_PASSWORD = process.env.ADMIN_SEED_PASSWORD || "Admin@RHG2024!";
@@ -30,11 +37,10 @@ const UserSchema = new mongoose.Schema({
   otpAttempts: { type: Number, default: 0 },
 }, { timestamps: true });
 
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+UserSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 async function seed() {

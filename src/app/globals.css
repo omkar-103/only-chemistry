@@ -58,9 +58,10 @@
   --color-sidebar-ring:               hsl(43 65% 52%);
 
   /* Fonts */
-  --font-sans:    "Inter", system-ui, sans-serif;
-  --font-display: "Outfit", system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+  --font-sans:         "Inter", system-ui, sans-serif;
+  --font-display:      "Outfit", system-ui, sans-serif;
+  --font-mono:         "JetBrains Mono", "Fira Code", monospace;
+  --font-neo:          var(--font-space-grotesk), "Space Grotesk", system-ui, sans-serif;
 
   /* Border Radius */
   --radius:    0.75rem;
@@ -110,6 +111,16 @@
   @keyframes spin-slow {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
+  }
+
+  /* Neo-Brutalist marquee */
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes marquee-reverse {
+    0%   { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
   }
 }
 
@@ -164,6 +175,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Prevent body from ever being wider than the viewport */
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Global box-sizing and responsive image/SVG reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -348,5 +377,146 @@ h1, h2, h3, h4, h5, h6 {
 .focus-ring:focus-visible {
   outline: 2px solid var(--color-ring);
   outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NEO-BRUTALIST DESIGN SYSTEM — OnlyChemistry Landing Page
+   These classes are ONLY used in src/components/landing/
+   and src/app/page.tsx. App pages are not affected.
+═══════════════════════════════════════════════════════════ */
+
+/* Design tokens */
+:root {
+  --neo-bg:     #FFFDF5;
+  --neo-black:  #000000;
+  --neo-yellow: #FFD93D;
+  --neo-red:    #FF6B6B;
+  --neo-violet: #C4B5FD;
+  --neo-white:  #FFFFFF;
+}
+
+/* Neo font helper */
+.neo-font {
+  font-family: var(--font-neo);
+}
+
+/* Hard shadow utilities */
+.neo-shadow-sm  { box-shadow:  4px  4px 0 var(--neo-black); }
+.neo-shadow     { box-shadow:  6px  6px 0 var(--neo-black); }
+.neo-shadow-md  { box-shadow:  8px  8px 0 var(--neo-black); }
+.neo-shadow-lg  { box-shadow: 12px 12px 0 var(--neo-black); }
+.neo-shadow-xl  { box-shadow: 16px 16px 0 var(--neo-black); }
+
+/* Solid border utilities */
+.neo-border    { border: 4px solid var(--neo-black); }
+.neo-border-2  { border: 2px solid var(--neo-black); }
+.neo-border-6  { border: 6px solid var(--neo-black); }
+.neo-border-8  { border: 8px solid var(--neo-black); }
+
+/* Graph-paper background */
+.neo-grid-bg {
+  background-color: var(--neo-bg);
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Neo card */
+.neo-card {
+  background: var(--neo-white);
+  border: 4px solid var(--neo-black);
+  box-shadow: 8px 8px 0 var(--neo-black);
+  border-radius: 0;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.neo-card:hover {
+  transform: translateY(-6px) rotate(0.5deg);
+  box-shadow: 12px 14px 0 var(--neo-black);
+}
+
+/* Neo primary button */
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-neo);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 4px solid var(--neo-black);
+  box-shadow: 4px 4px 0 var(--neo-black);
+  border-radius: 0;
+  cursor: pointer;
+  transition: transform 100ms ease, box-shadow 100ms ease;
+  white-space: nowrap;
+  padding: 0.75rem 1.5rem;
+}
+.neo-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 var(--neo-black);
+}
+.neo-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+.neo-btn-primary {
+  background: var(--neo-yellow);
+  color: var(--neo-black);
+}
+.neo-btn-secondary {
+  background: var(--neo-white);
+  color: var(--neo-black);
+}
+.neo-btn-dark {
+  background: var(--neo-black);
+  color: var(--neo-white);
+}
+
+/* Marquee track */
+.neo-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.neo-marquee-track-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee-reverse 28s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .neo-marquee-track,
+  .neo-marquee-track-reverse {
+    animation-play-state: paused;
+  }
+}
+
+/* Outlined text (stroke only, transparent fill) */
+.neo-text-outline {
+  -webkit-text-stroke: 3px var(--neo-black);
+  color: transparent;
+}
+
+/* Sticker badge */
+.neo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 3px solid var(--neo-black);
+  border-radius: 9999px;
+  background: var(--neo-yellow);
+  font-family: var(--font-neo);
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.8rem;
+  box-shadow: 3px 3px 0 var(--neo-black);
+  transition: transform 150ms ease;
+}
+.neo-badge:hover {
+  transform: rotate(4deg) scale(1.05);
 }
 
