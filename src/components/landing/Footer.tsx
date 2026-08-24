@@ -33,9 +33,9 @@ const FOOTER_COLS = [
   {
     heading: "Legal",
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Use",   href: "#" },
-      { label: "Contact",        href: "#" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Use",   href: "/terms" },
+      { label: "Contact",        href: "mailto:support@onlychemistry.com" },
     ],
   },
 ] as const;
@@ -49,7 +49,6 @@ export default function Footer() {
         fontFamily: "var(--font-neo)",
         padding: "3rem 0 1.75rem",
         width: "100%",
-        overflowX: "clip",
       }}
     >
       <div

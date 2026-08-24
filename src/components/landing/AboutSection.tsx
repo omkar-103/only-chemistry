@@ -18,7 +18,6 @@ export default function AboutSection() {
         borderBottom: "4px solid #000",
         fontFamily: "var(--font-neo)",
         width: "100%",
-        overflowX: "clip",
       }}
     >
       <div

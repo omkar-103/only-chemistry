@@ -32,7 +32,6 @@ export default function ExamCategories() {
         borderBottom: "4px solid #000",
         fontFamily: "var(--font-neo)",
         width: "100%",
-        overflowX: "clip",
       }}
     >
       <div
@@ -118,7 +117,7 @@ export default function ExamCategories() {
             >
               <Link
                 href={`${ROUTES.STUDENT.EXAMS}?category=${encodeURIComponent(cat.value)}`}
-                style={{ textDecoration: "none", display: "block", height: "100%" }}
+                style={{ textDecoration: "none", display: "block" }}
               >
                 <div
                   style={{
@@ -127,7 +126,6 @@ export default function ExamCategories() {
                     boxShadow: "6px 6px 0 #000",
                     padding: "1.25rem",
                     cursor: "pointer",
-                    height: "100%",
                     boxSizing: "border-box",
                     transition: "transform 120ms ease, box-shadow 120ms ease",
                   }}

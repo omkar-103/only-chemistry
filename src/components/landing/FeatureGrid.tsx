@@ -65,7 +65,6 @@ export default function FeatureGrid() {
         padding: "4rem 0",
         fontFamily: "var(--font-neo)",
         width: "100%",
-        overflowX: "clip",
       }}
     >
       <div

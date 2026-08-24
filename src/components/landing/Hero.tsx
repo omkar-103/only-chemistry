@@ -26,11 +26,10 @@ export default function Hero() {
     <section
       className="neo-grid-bg hero-section"
       style={{
-        paddingTop: "2.5rem",
+        paddingTop: "0.5rem",
         paddingBottom: "2.5rem",
         borderBottom: "4px solid #000",
         fontFamily: "var(--font-neo)",
-        overflowX: "clip",
         width: "100%",
       }}
     >
@@ -85,28 +84,7 @@ export default function Hero() {
           transition={{ duration: 0.45, ease: "easeOut" }}
           style={{ minWidth: 0, width: "100%" }}
         >
-          {/* Badge sticker */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              border: "3px solid #000",
-              borderRadius: "9999px",
-              background: "#FFD93D",
-              fontFamily: "var(--font-neo)",
-              fontWeight: 700,
-              fontSize: "0.65rem",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "0.3rem 0.75rem",
-              boxShadow: "2px 2px 0 #000",
-              marginBottom: "1.25rem",
-              maxWidth: "100%",
-            }}
-          >
-            ⚗️ India&apos;s Premier Chemistry Platform
-          </div>
+
 
           {/* Hero headline — block spans for controlled line breaks */}
           <h1
