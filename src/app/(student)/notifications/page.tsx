@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Bell, CheckCheck, Search, BellOff,
   BookOpen, Trophy, CreditCard, MessageSquare, PlayCircle,
-  Shield, Star, Megaphone, AlertCircle, Info, Zap,
+  Shield, Star, Megaphone, AlertCircle, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import { toast } from "@/hooks/useToast";
 import Link from "next/link";
-import { DemoBanner } from "@/components/ui/DemoOverlay";
 
 /* ── Type & display configs ────────────────────────────────── */
 const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
@@ -109,20 +108,13 @@ export default function NotificationsPage() {
   const criticalCount = notifications.filter(n => !n.isRead && n.priority === "critical").length;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 max-w-3xl mx-auto">
-      {/* ── Demo Banner: top-of-page warning, sidebar stays fully usable ── */}
-      <DemoBanner
-        title="Notifications are currently disabled"
-        description="Real-time notifications require backend communication services and infrastructure that are not configured in this demo environment."
-      />
-      {/* ── Existing UI: fully visible, all interactions blocked via pointer-events-none ── */}
-      <div className="space-y-5 pointer-events-none select-none opacity-75">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 max-w-3xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 pb-2 border-b border-border">
         <div>
           <h1 className="text-2xl font-display font-black text-foreground">Notifications</h1>
           <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm font-medium">
               {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
             </p>
             {criticalCount > 0 && (
@@ -133,14 +125,14 @@ export default function NotificationsPage() {
           </div>
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
+          <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5 shrink-0 text-foreground">
             <CheckCheck className="h-4 w-4" />
             Mark all read
           </Button>
         )}
       </div>
 
-      {/* Filters */}
+      {/* Search & Unread Filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
           placeholder="Search notifications..."
@@ -150,84 +142,88 @@ export default function NotificationsPage() {
           className="flex-1"
           id="notif-search"
         />
-        <div className="flex gap-2">
-          <Button
-            variant={showUnread ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowUnread(v => !v)}
-            className="gap-1.5 shrink-0"
-            id="notif-unread-filter"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            Unread
-            {unreadCount > 0 && (
-              <span className="bg-destructive text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center font-bold">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </Button>
+        <Button
+          variant={showUnread ? "default" : "outline"}
+          size="default"
+          onClick={() => setShowUnread(v => !v)}
+          className="gap-2 shrink-0 justify-center"
+          id="notif-unread-filter"
+        >
+          <Bell className="h-4 w-4" />
+          Unread Only
+          {unreadCount > 0 && (
+            <span className="bg-destructive text-destructive-foreground rounded-full text-[10px] w-4 h-4 flex items-center justify-center font-bold">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Button>
+      </div>
+
+      {/* Priority Filters */}
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Priority</p>
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {[
+            { value: "", label: "All Priorities" },
+            { value: "critical", label: "🔴 Critical" },
+            { value: "high", label: "🟠 High" },
+            { value: "medium", label: "🟡 Medium" },
+            { value: "low", label: "🟢 Low" },
+          ].map(p => (
+            <button
+              key={p.value}
+              onClick={() => setPriorityFilter(p.value)}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors whitespace-nowrap cursor-pointer",
+                priorityFilter === p.value
+                  ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                  : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground bg-card"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Priority filter */}
-      <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-        {[
-          { value: "", label: "All Priorities" },
-          { value: "critical", label: "🔴 Critical" },
-          { value: "high", label: "🟠 High" },
-          { value: "medium", label: "🟡 Medium" },
-          { value: "low", label: "🟢 Low" },
-        ].map(p => (
-          <button
-            key={p.value}
-            onClick={() => setPriorityFilter(p.value)}
-            className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
-              priorityFilter === p.value
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:border-primary/50"
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
+      {/* Category Filter Pills */}
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Category</p>
+        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {FILTER_TYPES.map(f => (
+            <button
+              key={f.value}
+              onClick={() => setTypeFilter(f.value)}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors whitespace-nowrap cursor-pointer",
+                typeFilter === f.value
+                  ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                  : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground bg-card"
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Type filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-        {FILTER_TYPES.map(f => (
-          <button
-            key={f.value}
-            onClick={() => setTypeFilter(f.value)}
-            className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
-              typeFilter === f.value
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:border-primary/50"
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Notifications list */}
+      {/* Notifications List */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-24 skeleton rounded-2xl" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <Card>
+        <Card className="border border-border">
           <CardContent className="py-16 text-center">
             <BellOff className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">No notifications found</p>
-            <p className="text-muted-foreground/60 text-sm mt-1">
+            <p className="text-foreground font-semibold text-base">No notifications found</p>
+            <p className="text-muted-foreground text-sm mt-1">
               {search || typeFilter || priorityFilter || showUnread ? "Try adjusting your filters" : "You're all caught up!"}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filtered.map((n, i) => {
             const cfg = TYPE_CONFIG[n.type] ?? TYPE_CONFIG["system"];
             const priCfg = PRIORITY_CONFIG[n.priority as keyof typeof PRIORITY_CONFIG] ?? PRIORITY_CONFIG.low;
@@ -244,7 +240,7 @@ export default function NotificationsPage() {
                 <Card className={cn(
                   "overflow-hidden transition-all duration-200 hover:shadow-md border",
                   !n.isRead && isHigh ? priCfg.ring : "",
-                  !n.isRead && "border-primary/20 bg-primary/[0.02]"
+                  !n.isRead ? "border-primary/30 bg-primary/[0.03]" : "border-border bg-card"
                 )}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
@@ -263,8 +259,8 @@ export default function NotificationsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              <p className={cn("text-sm font-semibold leading-snug", !n.isRead ? "text-foreground" : "text-muted-foreground")}>
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <p className={cn("text-sm font-bold leading-snug", !n.isRead ? "text-foreground" : "text-muted-foreground")}>
                                 {n.title}
                               </p>
                               {/* Priority badge */}
@@ -277,24 +273,24 @@ export default function NotificationsPage() {
                               </span>
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed">{n.message}</p>
-                            <p className="text-[11px] text-muted-foreground/50 mt-1">{timeAgo(n.createdAt)}</p>
+                            <p className="text-[11px] text-muted-foreground/60 mt-1">{timeAgo(n.createdAt)}</p>
                           </div>
 
-                          {/* Mark read only — no delete */}
+                          {/* Mark read action */}
                           {!n.isRead && (
                             <button
                               onClick={() => markAsRead(n._id)}
                               title="Mark as read"
-                              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors shrink-0"
+                              className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
                             >
-                              <CheckCheck className="h-3.5 w-3.5" />
+                              <CheckCheck className="h-4 w-4" />
                             </button>
                           )}
                         </div>
 
                         {/* Link */}
                         {n.link && (
-                          <Link href={n.link} className="inline-block mt-1.5 text-xs text-primary hover:underline font-medium">
+                          <Link href={n.link} className="inline-block mt-1.5 text-xs text-primary hover:underline font-semibold">
                             View →
                           </Link>
                         )}
@@ -310,11 +306,10 @@ export default function NotificationsPage() {
 
       {/* Results count */}
       {filtered.length > 0 && (
-        <p className="text-xs text-center text-muted-foreground/60">
+        <p className="text-xs text-center text-muted-foreground">
           Showing {filtered.length} of {notifications.length} notifications
         </p>
       )}
-      </div>{/* end pointer-events-none wrapper */}
     </motion.div>
   );
 }

@@ -13,14 +13,14 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gold: "bg-gold-500 text-navy-900 hover:bg-gold-400 font-semibold shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.5)]",
+        gold: "bg-gold-500 text-navy-950 font-bold hover:bg-gold-400 shadow-[0_4px_15px_rgba(212,175,55,0.3)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.5)]",
         navy: "bg-navy-900 text-white hover:bg-navy-800 dark:bg-navy-800 dark:hover:bg-navy-700",
-        "outline-gold": "border-2 border-gold-500 text-gold-600 hover:bg-gold-500 hover:text-navy-900 dark:text-gold-400 dark:hover:text-navy-900",
+        "outline-gold": "border-2 border-gold-500 text-gold-700 hover:bg-gold-500 hover:text-navy-950 dark:text-gold-400 dark:hover:text-navy-950 font-semibold",
       },
       size: {
         default: "h-10 px-4 py-2",
