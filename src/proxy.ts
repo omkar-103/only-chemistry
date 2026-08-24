@@ -13,6 +13,8 @@ const PUBLIC_ROUTES = [
   "/verify-email",
   "/forgot-password",
   "/reset-password",
+  "/terms",
+  "/privacy",
 ];
 
 // API routes that are public (no auth needed)
