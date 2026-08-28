@@ -19,7 +19,22 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     .lean();
 
   if (!student) return errorResponse("Student not found", 404);
-  return successResponse(student, "Student fetched");
+
+  const assigned = Array.from(
+    new Set([
+      ...(student.assignedExams || []),
+      ...(student.assignedCategories || []),
+    ])
+  );
+  const active = student.lastActiveAt || student.lastActive || student.lastLogin || null;
+
+  return successResponse({
+    ...student,
+    assignedExams: assigned,
+    assignedCategories: assigned,
+    lastActiveAt: active,
+    lastActive: active,
+  }, "Student fetched");
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
@@ -54,35 +69,40 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     );
   }
 
-  // ── Assign / update categories (admin only, no password access) ─
-  if (body.action === "assign-categories") {
-    if (!Array.isArray(body.assignedCategories)) {
-      return errorResponse("assignedCategories must be an array", 400);
+  // ── Assign / update categories or exams (admin only) ─────────
+  if (body.action === "assign-categories" || body.action === "assign-exams" || body.assignedExams || body.assignedCategories) {
+    const rawCategories = body.assignedExams || body.assignedCategories;
+    if (!Array.isArray(rawCategories)) {
+      return errorResponse("assignedExams must be an array", 400);
     }
-    const categories = (body.assignedCategories as unknown[])
+    const categories = (rawCategories as unknown[])
       .map((c) => (typeof c === "string" ? c.trim() : ""))
       .filter(Boolean);
 
+    student.assignedExams = categories;
     student.assignedCategories = categories;
     await student.save();
 
     await createAuditLog({
       userId: authResult.user.userId,
-      action: "student_categories_assigned",
+      action: "student_exams_assigned",
       resource: "User",
       resourceId: id,
       details: {
         studentEmail: student.email,
         studentName: student.name,
-        categories,
+        assignedExams: categories,
       },
       ip: getClientIP(req),
       severity: "info",
     });
 
     return successResponse(
-      { assignedCategories: student.assignedCategories },
-      "Categories updated successfully"
+      {
+        assignedExams: student.assignedExams,
+        assignedCategories: student.assignedCategories,
+      },
+      "Assigned exams updated successfully"
     );
   }
 

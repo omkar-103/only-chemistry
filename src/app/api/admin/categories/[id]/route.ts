@@ -4,14 +4,16 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db/connection";
 import Category from "@/lib/db/models/Category";
 import { requireAdmin, successResponse, errorResponse } from "@/lib/api/utils";
+import { slugifyCategory } from "@/lib/db/ensureCategories";
 import { z } from "zod";
 
 const updateSchema = z.object({
   name:         z.string().min(1).max(100).optional(),
+  slug:         z.string().max(100).optional(),
   description:  z.string().max(500).optional(),
   icon:         z.string().optional(),
-  thumbnail:    z.string().optional(),
-  banner:       z.string().optional(),
+  thumbnail:    z.string().optional().or(z.literal("")),
+  banner:       z.string().optional().or(z.literal("")),
   color:        z.string().optional(),
   isActive:     z.boolean().optional(),
   displayOrder: z.number().int().optional(),
@@ -40,11 +42,17 @@ export async function PUT(req: NextRequest, { params }: Params) {
     if (!validation.success) return errorResponse(validation.error.issues[0].message, 400);
 
     await connectDB();
-    const cat = await Category.findByIdAndUpdate(id, { $set: validation.data }, { new: true });
+
+    const updateData: Record<string, any> = { ...validation.data };
+    if (validation.data.name && !validation.data.slug) {
+      updateData.slug = slugifyCategory(validation.data.name);
+    }
+
+    const cat = await Category.findByIdAndUpdate(id, { $set: updateData }, { new: true });
     if (!cat) return errorResponse("Category not found", 404);
     return successResponse(cat, "Category updated");
   } catch (e: any) {
-    if (e.code === 11000) return errorResponse("Category name already exists", 409);
+    if (e.code === 11000) return errorResponse("Category name or slug already exists", 409);
     return errorResponse("Failed to update category", 500);
   }
 }

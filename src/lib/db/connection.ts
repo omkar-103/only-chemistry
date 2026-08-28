@@ -3,15 +3,8 @@
 // Connects to MongoDB Atlas using MONGODB_URI from environment
 // ============================================================
 
-import dns from "dns";
+import "./initDns";
 import mongoose from "mongoose";
-
-// Set reliable DNS servers (Google / Cloudflare) to prevent Windows / ISP querySrv ECONNREFUSED errors
-try {
-  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
-} catch (e) {
-  console.warn("⚠️ [DB] Unable to set custom DNS servers:", e);
-}
 
 // ── Safe URI resolution (no in-memory fallback) ───────────────
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -62,11 +55,12 @@ export async function connectDB(): Promise<typeof mongoose> {
     return cached.conn;
   }
 
-  if (!MONGODB_URI) {
+  const uri = process.env.MONGODB_URI || MONGODB_URI;
+  if (!uri) {
     throw new Error("[DB] MONGODB_URI environment variable is not set.");
   }
 
-  const clusterHost = getClusterHost(MONGODB_URI);
+  const clusterHost = getClusterHost(uri);
   console.log(`🔄 [DB] Connecting to Atlas cluster: ${clusterHost}`);
 
   // Disconnect stale connection
@@ -74,14 +68,8 @@ export async function connectDB(): Promise<typeof mongoose> {
     await mongoose.disconnect();
   }
 
-  try {
-    dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
-  } catch {
-    // ignore
-  }
-
   cached.promise = mongoose
-    .connect(MONGODB_URI, {
+    .connect(uri, {
       bufferCommands: true,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 15000,

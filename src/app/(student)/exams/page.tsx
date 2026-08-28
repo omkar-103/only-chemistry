@@ -25,6 +25,9 @@ const SORT_OPTIONS = [
 
 function ExamCard({ exam, hasAccess }: { exam: any; hasAccess: boolean }) {
   const diff = DIFFICULTY_CONFIG[exam.difficulty as keyof typeof DIFFICULTY_CONFIG];
+  const isFree =
+    exam.accessType === "free" ||
+    (exam.isFree === true && exam.accessType !== "restricted");
 
   return (
     <motion.div
@@ -47,12 +50,12 @@ function ExamCard({ exam, hasAccess }: { exam: any; hasAccess: boolean }) {
 
           {/* Badges overlay */}
           <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
-            {exam.isFree ? (
+            {isFree ? (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">FREE</span>
             ) : hasAccess ? (
-              <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">Access Granted</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wide shadow-sm">Assigned Exam</span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full bg-muted/90 text-muted-foreground text-[10px] font-bold uppercase shadow-sm">Category Required</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-muted/90 text-muted-foreground text-[10px] font-bold uppercase shadow-sm">Restricted</span>
             )}
             <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shadow-sm", diff?.bg, diff?.color)}>
               {diff?.label}
@@ -141,7 +144,12 @@ export default function ExamsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const LIMIT = 12;
 
-  const assignedCategories: string[] = user?.assignedCategories || [];
+  const assignedCategories: string[] = Array.from(
+    new Set([
+      ...(user?.assignedExams || []),
+      ...(user?.assignedCategories || []),
+    ])
+  );
   const purchasedExams: string[] = (user?.purchasedExams as any[]) || [];
 
   const fetchExams = useCallback(() => {
@@ -186,7 +194,7 @@ export default function ExamsPage() {
         </div>
         {assignedCategories.length > 0 ? (
           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Assigned Courses:</span>
+            <span className="font-medium text-foreground">Assigned Exams:</span>
             {assignedCategories.map((c) => (
               <span key={c} className="px-2 py-0.5 bg-primary/10 text-primary rounded-full font-medium">
                 {c}
@@ -194,8 +202,8 @@ export default function ExamsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800">
-            Free exams available · Contact admin for full course category access
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+            Free exams available · Contact admin for exam category assignment
           </div>
         )}
       </div>
@@ -375,9 +383,16 @@ export default function ExamsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {exams.map(exam => {
+            const isFree =
+              exam.accessType === "free" ||
+              (exam.isFree === true && exam.accessType !== "restricted");
+            const examVisibleTo =
+              exam.visibleTo && exam.visibleTo.length > 0
+                ? exam.visibleTo
+                : [exam.category];
             const hasAccess =
-              exam.isFree === true ||
-              assignedCategories.includes(exam.category) ||
+              isFree ||
+              examVisibleTo.some((c: string) => assignedCategories.includes(c)) ||
               purchasedExams.includes(exam._id);
 
             return (

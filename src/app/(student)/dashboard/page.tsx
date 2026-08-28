@@ -46,16 +46,31 @@ export default function StudentDashboardPage() {
   ];
 
 
+  const assignedCategories: string[] = [
+    ...(user?.assignedExams || []),
+    ...(user?.assignedCategories || []),
+  ];
+  const uniqueAssigned = Array.from(new Set(assignedCategories));
+
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
       {/* Welcome */}
       <motion.div variants={fadeUp} className="rounded-2xl bg-gradient-to-r from-navy-800 to-navy-600 p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/30">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gold-500/20 text-gold-300 border border-gold-500/30">
                 ⚡ Active Preparation
               </span>
+              {uniqueAssigned.length > 0 ? (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white/90 border border-white/20">
+                  Assigned: {uniqueAssigned.join(", ")}
+                </span>
+              ) : (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Free Exam Access
+                </span>
+              )}
             </div>
             <h1 className="text-2xl font-display font-black">
               {user?.name} 👋

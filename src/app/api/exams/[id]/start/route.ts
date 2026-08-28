@@ -5,6 +5,7 @@ import Exam from "@/lib/db/models/Exam";
 import ExamAttempt from "@/lib/db/models/ExamAttempt";
 import User from "@/lib/db/models/User";
 import { requireAuth, successResponse, errorResponse } from "@/lib/api/utils";
+import { checkExamAccess, logExamAccess } from "@/lib/auth/accessControl";
 
 interface RouteParams { params: Promise<{ id: string }> }
 
@@ -29,14 +30,26 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return errorResponse("Exam not found or not available", 404);
     }
 
-    // Check purchase (for paid exams)
-    if (!exam.isFree) {
-      const student = await User.findById(authResult.user.userId).lean();
-      const hasPurchased = student?.purchasedExams?.some(
-        (p) => p.toString() === id
+    // Check access permissions
+    if (authResult.user.role === "student") {
+      const student = await User.findById(authResult.user.userId)
+        .select("name email assignedExams assignedCategories purchasedExams")
+        .lean();
+
+      const accessResult = checkExamAccess(
+        {
+          role: "student",
+          assignedExams: student?.assignedExams,
+          assignedCategories: student?.assignedCategories,
+          purchasedExams: student?.purchasedExams,
+        },
+        exam
       );
-      if (!hasPurchased) {
-        return errorResponse("Please purchase this exam to start", 403);
+
+      logExamAccess(student?.email || authResult.user.email, id, accessResult);
+
+      if (!accessResult.hasAccess) {
+        return errorResponse("You do not have access to this exam.", 403);
       }
     }
 

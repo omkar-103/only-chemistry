@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, UserCheck, UserX, Mail, Phone, Calendar,
-  BookOpen, Trophy, Clock, Shield, Tag, X, Check, Loader2
+  BookOpen, Trophy, Clock, Shield, Tag, X, Check, Loader2, Plus, Trash2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,9 @@ import axios from "axios";
 import { cn } from "@/lib/utils/cn";
 import { format } from "date-fns";
 import Link from "next/link";
+import { formatLastActive } from "@/lib/utils/formatDate";
 
-// ── Category Assignment Modal ─────────────────────────────────
+// ── Exam Category Assignment Modal ────────────────────────────
 function CategoryModal({
   student,
   onClose,
@@ -25,37 +26,45 @@ function CategoryModal({
   onClose: () => void;
   onSaved: (categories: string[]) => void;
 }) {
-  const [allCategories, setAllCategories] = useState<any[]>([]);
-  const [selected, setSelected] = useState<string[]>(student.assignedCategories || []);
-  const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
+  const [selected, setSelected] = useState<string[]>(
+    student.assignedExams || student.assignedCategories || []
+  );
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    axios.get("/api/admin/categories?limit=100")
-      .then(r => setAllCategories(r.data.data || []))
-      .catch(() => setAllCategories([]))
+    axios
+      .get("/api/admin/categories?active=false")
+      .then((r) => setCategories(Array.isArray(r.data.data) ? r.data.data : []))
+      .catch(() => setCategories([]))
       .finally(() => setLoadingCats(false));
   }, []);
 
   const toggle = (name: string) =>
-    setSelected(prev => prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name]);
+    setSelected((prev) =>
+      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
+    );
 
   const save = async () => {
     setSaving(true);
     try {
       await axios.patch(`/api/admin/students/${student._id}`, {
-        action: "assign-categories",
+        action: "assign-exams",
+        assignedExams: selected,
         assignedCategories: selected,
       });
       toast({
-        title: "Categories updated",
-        description: `${selected.length} categor${selected.length === 1 ? "y" : "ies"} assigned to ${student.name}`,
+        title: "Assigned exams updated",
+        description: `${selected.length} exam categor${
+          selected.length === 1 ? "y" : "ies"
+        } assigned to ${student.name}`,
         variant: "success",
       });
       onSaved(selected);
       onClose();
     } catch {
-      toast({ title: "Failed to update categories", variant: "error" });
+      toast({ title: "Failed to update assigned exams", variant: "error" });
     } finally {
       setSaving(false);
     }
@@ -63,54 +72,79 @@ function CategoryModal({
 
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <motion.div
-        initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+        initial={{ scale: 0.93, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.93, opacity: 0 }}
         className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
       >
         <div className="flex items-start justify-between p-5 border-b border-border">
           <div>
-            <h2 className="font-display font-black text-foreground text-lg">Manage Student Access</h2>
+            <h2 className="font-display font-black text-foreground text-lg">
+              Manage Assigned Exams
+            </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
               <span className="font-medium text-foreground">{student.name}</span> · {student.email}
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors mt-0.5">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-5 max-h-72 overflow-y-auto">
+        <div className="p-5 max-h-80 overflow-y-auto">
+          <p className="text-xs text-muted-foreground mb-3 font-medium">
+            Toggle exam categories assigned to this student:
+          </p>
           {loadingCats ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-10">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
-          ) : allCategories.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-6">
-              No categories found. Create them in{" "}
-              <Link href="/admin/categories" className="text-primary hover:underline">Admin → Categories</Link>.
+          ) : categories.length === 0 ? (
+            <p className="text-sm text-center text-muted-foreground py-6">
+              No categories found.
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-2">
-              {allCategories.map((cat: any) => {
-                const isSelected = selected.includes(cat.name);
+              {categories.map((cat) => {
+                const isSelected =
+                  selected.includes(cat.name) ||
+                  (cat.slug && selected.includes(cat.slug));
                 return (
                   <button
-                    key={cat._id}
+                    key={cat._id || cat.name}
+                    type="button"
                     onClick={() => toggle(cat.name)}
                     className={cn(
                       "flex items-center gap-3 w-full px-4 py-3 rounded-xl border text-left transition-all duration-150",
                       isSelected
-                        ? "border-primary bg-primary/5 text-primary"
+                        ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
                         : "border-border hover:border-primary/40 text-foreground hover:bg-muted/40"
                     )}
                   >
-                    <span className="text-lg shrink-0">{cat.icon || "📚"}</span>
-                    <span className="text-sm font-medium flex-1">{cat.name}</span>
-                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                    <span className="text-xl shrink-0">{cat.icon || "📚"}</span>
+                    <span className="text-sm flex-1">{cat.name}</span>
+                    <div
+                      className={cn(
+                        "w-5 h-5 rounded-md border flex items-center justify-center transition-colors shrink-0",
+                        isSelected
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-muted-foreground/40"
+                      )}
+                    >
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
+                    </div>
                   </button>
                 );
               })}
@@ -120,11 +154,19 @@ function CategoryModal({
 
         <div className="flex items-center justify-between gap-3 p-5 border-t border-border bg-muted/20">
           <span className="text-xs text-muted-foreground">
-            {selected.length} categor{selected.length === 1 ? "y" : "ies"} selected
+            {selected.length} exam categor{selected.length === 1 ? "y" : "ies"} selected
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-            <Button variant="gold" size="sm" onClick={save} isLoading={saving} loadingText="Saving...">
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              variant="gold"
+              size="sm"
+              onClick={save}
+              isLoading={saving}
+              loadingText="Saving..."
+            >
               Save Access
             </Button>
           </div>
@@ -175,6 +217,29 @@ export default function AdminStudentDetailPage() {
     }
   };
 
+  const removeExam = async (categoryToRemove: string) => {
+    const current = student?.assignedExams || student?.assignedCategories || [];
+    const updated = current.filter((c: string) => c !== categoryToRemove);
+    try {
+      await axios.patch(`/api/admin/students/${id}`, {
+        action: "assign-exams",
+        assignedExams: updated,
+        assignedCategories: updated,
+      });
+      setStudent((prev: any) => ({
+        ...prev,
+        assignedExams: updated,
+        assignedCategories: updated,
+      }));
+      toast({
+        title: `Removed ${categoryToRemove}`,
+        variant: "success",
+      });
+    } catch {
+      toast({ title: "Failed to remove exam", variant: "error" });
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -194,7 +259,8 @@ export default function AdminStudentDetailPage() {
   const avgScore = attempts.length
     ? Math.round(attempts.reduce((a, r) => a + (r.percentage || 0), 0) / attempts.length)
     : 0;
-  const assignedCats = student.assignedCategories || [];
+  const assignedCats = student.assignedExams || student.assignedCategories || [];
+  const activeTime = student.lastActiveAt || student.lastActive;
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5 max-w-4xl">
@@ -225,19 +291,20 @@ export default function AdminStudentDetailPage() {
                   {student.isActive ? "Active" : "Suspended"}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{student.email}</span>
                 {student.mobile && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{student.mobile}</span>}
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
                   Joined {student.createdAt ? format(new Date(student.createdAt), "dd MMM yyyy") : "—"}
                 </span>
-                {student.lastLogin && (
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5" />
-                    Last login {format(new Date(student.lastLogin), "dd MMM yyyy")}
-                  </span>
-                )}
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
+                  Last Active: <strong className="text-foreground">{formatLastActive(activeTime)}</strong>
+                  {activeTime && (
+                    <span className="text-xs text-muted-foreground">({format(new Date(activeTime), "dd MMM yyyy, hh:mm a")})</span>
+                  )}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -248,7 +315,7 @@ export default function AdminStudentDetailPage() {
                 className="gap-1.5"
               >
                 <Tag className="h-4 w-4 text-primary" />
-                Assign Categories
+                Assign Exams
               </Button>
               <Button
                 variant={student.isActive ? "outline" : "default"}
@@ -281,7 +348,7 @@ export default function AdminStudentDetailPage() {
           { label: "Exams Taken", value: attempts.length, icon: BookOpen, color: "text-blue-600" },
           { label: "Passed", value: passedCount, icon: Trophy, color: "text-green-600" },
           { label: "Avg Score", value: `${avgScore}%`, icon: Shield, color: "text-primary" },
-          { label: "Assigned Categories", value: assignedCats.length, icon: Tag, color: "text-amber-600" },
+          { label: "Assigned Exams", value: assignedCats.length, icon: Tag, color: "text-amber-600" },
         ].map((s) => {
           const Icon = s.icon;
           return (
@@ -294,7 +361,7 @@ export default function AdminStudentDetailPage() {
         })}
       </div>
 
-      {/* Recent Activity & Category Access Grid */}
+      {/* Recent Activity & Assigned Exams Grid */}
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Recent Exams */}
         <Card>
@@ -347,12 +414,12 @@ export default function AdminStudentDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Assigned Categories */}
+        {/* Assigned Exams */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <Tag className="h-4 w-4 text-primary" />
-              Assigned Categories ({assignedCats.length})
+              Assigned Exams ({assignedCats.length})
             </CardTitle>
             <Button
               variant="outline"
@@ -360,34 +427,59 @@ export default function AdminStudentDetailPage() {
               onClick={() => setShowCategoryModal(true)}
               className="text-xs h-7 gap-1"
             >
-              Edit
+              <Plus className="h-3 w-3" />
+              Assign Exam
             </Button>
           </CardHeader>
           <CardContent>
             {assignedCats.length === 0 ? (
               <div className="text-center py-8">
                 <Tag className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No categories assigned yet</p>
-                <p className="text-xs text-muted-foreground mt-1">Assign categories to grant access to course exams & materials</p>
+                <p className="text-sm text-muted-foreground">No exams assigned yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This student currently has access to free exams only. Assign exam categories to grant access.
+                </p>
                 <Button
                   variant="gold"
                   size="sm"
                   onClick={() => setShowCategoryModal(true)}
-                  className="mt-3 text-xs"
+                  className="mt-3 text-xs gap-1.5"
                 >
-                  Assign Categories
+                  <Plus className="h-3.5 w-3.5" />
+                  + Assign Exam
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2 py-2">
-                {assignedCats.map((cat: string) => (
-                  <div
-                    key={cat}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary font-medium text-sm"
+              <div className="space-y-3 py-1">
+                <div className="flex flex-wrap gap-2">
+                  {assignedCats.map((cat: string) => (
+                    <div
+                      key={cat}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary font-medium text-sm group"
+                    >
+                      <span>{cat}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeExam(cat)}
+                        title={`Remove ${cat}`}
+                        className="text-primary/60 hover:text-destructive hover:bg-destructive/10 rounded p-0.5 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-2 border-t border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCategoryModal(true)}
+                    className="text-xs gap-1.5"
                   >
-                    <span>{cat}</span>
-                  </div>
-                ))}
+                    <Plus className="h-3.5 w-3.5" />
+                    Add / Modify Assigned Exams
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
@@ -400,7 +492,13 @@ export default function AdminStudentDetailPage() {
           <CategoryModal
             student={student}
             onClose={() => setShowCategoryModal(false)}
-            onSaved={(newCats) => setStudent((prev: any) => ({ ...prev, assignedCategories: newCats }))}
+            onSaved={(newCats) =>
+              setStudent((prev: any) => ({
+                ...prev,
+                assignedExams: newCats,
+                assignedCategories: newCats,
+              }))
+            }
           />
         )}
       </AnimatePresence>

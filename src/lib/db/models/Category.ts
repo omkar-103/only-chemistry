@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ICategoryDocument extends Document {
   name: string;
+  slug: string;
   description: string;
   icon?: string;          // emoji or Cloudinary URL
   thumbnail?: string;     // Cloudinary URL
@@ -18,6 +19,7 @@ export interface ICategoryDocument extends Document {
 const CategorySchema = new Schema<ICategoryDocument>(
   {
     name:         { type: String, required: true, unique: true, trim: true, maxlength: 100 },
+    slug:         { type: String, trim: true, lowercase: true, index: true },
     description:  { type: String, default: "", maxlength: 500 },
     icon:         { type: String, default: "📚" },
     thumbnail:    { type: String },
@@ -31,6 +33,7 @@ const CategorySchema = new Schema<ICategoryDocument>(
 
 CategorySchema.index({ isActive: 1, displayOrder: 1 });
 CategorySchema.index({ name: 1 });
+CategorySchema.index({ slug: 1 });
 
 const Category: Model<ICategoryDocument> =
   mongoose.models.Category ||

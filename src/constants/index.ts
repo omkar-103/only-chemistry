@@ -6,16 +6,24 @@ export const APP_NAME = "Only Chemistry";
 export const APP_TAGLINE = "Premier Chemistry Education Platform";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://onlychemistry.com";
 
-// ── Exam Categories ───────────────────────────────────────────
-export const EXAM_CATEGORIES = [
-  { value: "JEE Main", label: "JEE Main", color: "#3B82F6", icon: "⚛️" },
-  { value: "JEE Advanced", label: "JEE Advanced", color: "#8B5CF6", icon: "🔬" },
-  { value: "GATE", label: "GATE", color: "#10B981", icon: "🎓" },
-  { value: "MHT-CET", label: "MHT-CET", color: "#F59E0B", icon: "📚" },
-  { value: "CSIR NET", label: "CSIR NET", color: "#EF4444", icon: "🧪" },
-  { value: "UGC NET", label: "UGC NET", color: "#EC4899", icon: "🏛️" },
-  { value: "SET", label: "SET", color: "#14B8A6", icon: "📝" },
+// ── Canonical Exam Categories ─────────────────────────────────
+export const CANONICAL_CATEGORIES = [
+  { name: "JEE Main", slug: "jee-main", color: "#3B82F6", icon: "⚛️", description: "Joint Entrance Examination - Main", displayOrder: 1 },
+  { name: "JEE Advanced", slug: "jee-advanced", color: "#8B5CF6", icon: "🔬", description: "Joint Entrance Examination - Advanced", displayOrder: 2 },
+  { name: "GATE", slug: "gate", color: "#10B981", icon: "🎓", description: "Graduate Aptitude Test in Engineering", displayOrder: 3 },
+  { name: "MHT-CET", slug: "mht-cet", color: "#F59E0B", icon: "📚", description: "Maharashtra Common Entrance Test", displayOrder: 4 },
+  { name: "IIT JAM", slug: "iit-jam", color: "#EF4444", icon: "🧪", description: "Joint Admission test for Masters", displayOrder: 5 },
+  { name: "NET", slug: "net", color: "#EC4899", icon: "🏛️", description: "National Eligibility Test for Chemistry", displayOrder: 6 },
+  { name: "SET", slug: "set", color: "#14B8A6", icon: "📝", description: "State Eligibility Test for Chemistry", displayOrder: 7 },
 ] as const;
+
+export const EXAM_CATEGORIES = CANONICAL_CATEGORIES.map((c) => ({
+  value: c.name,
+  slug: c.slug,
+  label: c.name,
+  color: c.color,
+  icon: c.icon,
+}));
 
 // ── JWT ───────────────────────────────────────────────────────
 export const JWT_ACCESS_EXPIRES = "15m";

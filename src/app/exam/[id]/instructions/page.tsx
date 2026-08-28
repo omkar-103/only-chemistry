@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import axios from "axios";
 import { ROUTES } from "@/constants";
+import { toast } from "@/hooks/useToast";
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -27,7 +28,11 @@ export default function ExamInstructionsPage({ params }: Params) {
       setExamId(id);
       axios.get(`/api/exams/${id}`)
         .then((r) => setExam(r.data.data))
-        .catch(() => router.push(ROUTES.STUDENT.EXAMS))
+        .catch((err) => {
+          const msg = err.response?.data?.message || "You do not have access to this exam.";
+          toast({ title: "Access Denied", description: msg, variant: "error" });
+          router.push(ROUTES.STUDENT.EXAMS);
+        })
         .finally(() => setLoading(false));
     });
   }, [params, router]);

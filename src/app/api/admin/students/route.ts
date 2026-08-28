@@ -40,7 +40,24 @@ export async function GET(req: NextRequest) {
       User.countDocuments(query),
     ]);
 
-    return paginatedResponse(students, total, page, limit, "Students fetched");
+    const mappedStudents = students.map((s: any) => {
+      const assigned = Array.from(
+        new Set([
+          ...(s.assignedExams || []),
+          ...(s.assignedCategories || []),
+        ])
+      );
+      const active = s.lastActiveAt || s.lastActive || s.lastLogin || null;
+      return {
+        ...s,
+        assignedExams: assigned,
+        assignedCategories: assigned,
+        lastActiveAt: active,
+        lastActive: active,
+      };
+    });
+
+    return paginatedResponse(mappedStudents, total, page, limit, "Students fetched");
   } catch (error) {
     console.error("[ADMIN STUDENTS] Error:", (error as Error).message);
     return errorResponse("Failed to fetch students", 500);
