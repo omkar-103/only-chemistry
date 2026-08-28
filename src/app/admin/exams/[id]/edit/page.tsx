@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Trash2, ChevronLeft, ChevronRight, Save,
   BookOpen, Settings, ListChecks, Eye, Upload, X, Image as ImageIcon, ArrowLeft,
+  Atom, FileCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,9 @@ import { toast } from "@/hooks/useToast";
 import axios from "axios";
 import { cn } from "@/lib/utils/cn";
 import Link from "next/link";
+import { ChemicalContent } from "@/types";
+import { ChemDrawUploader } from "@/components/ui/ChemDrawUploader";
+import { ChemicalContentRenderer } from "@/components/ui/ChemicalContentRenderer";
 
 // ── Step metadata ──────────────────────────────────────────────
 const STEPS = [
@@ -34,12 +38,13 @@ const STEPS = [
   { id: 4, label: "Preview",      icon: Eye },
 ] as const;
 
-// ── Question shape ─────────────────────────────────────────────
+// ── Question shape (with ChemDraw support) ─────────────────────
 interface QuestionForm {
   questionText:  string;
   questionImage?: string;
+  questionChemicalContents?: ChemicalContent[];
   questionType:  "single" | "multiple" | "truefalse";
-  options:       { id: string; text: string; image?: string }[];
+  options:       { id: string; text: string; image?: string; chemicalContent?: ChemicalContent }[];
   correctAnswers: string[];
   marks:         number;
   negativeMarks: number;
@@ -50,6 +55,7 @@ interface QuestionForm {
 const emptyQuestion = (): QuestionForm => ({
   questionText: "",
   questionImage: undefined,
+  questionChemicalContents: [],
   questionType: "single",
   options: [
     { id: "A", text: "" },
@@ -134,10 +140,18 @@ export default function EditExamPage() {
   const step1Form = useForm<ExamStep1Input>({
     resolver: zodResolver(examStep1Schema) as any,
     defaultValues: {
-      isFree: true, price: 0, passingPercentage: 40,
-      negativeMarkingEnabled: false, maxAttempts: 1,
-      resultVisibility: "score_only", showExplanations: false,
-      allowReattempt: false, difficulty: "medium", status: "draft",
+      accessType: "free",
+      visibleTo: [],
+      isFree: true,
+      price: 0,
+      passingPercentage: 40,
+      negativeMarkingEnabled: false,
+      maxAttempts: 1,
+      resultVisibility: "score_only",
+      showExplanations: false,
+      allowReattempt: false,
+      difficulty: "medium",
+      status: "draft",
     },
   });
 
@@ -145,18 +159,40 @@ export default function EditExamPage() {
   const step2Form = useForm<ExamStep2Input>({
     resolver: zodResolver(examStep2Schema) as any,
     defaultValues: {
-      totalDuration: 60, autoDistributeTime: true,
-      shuffleQuestions: false, shuffleOptions: false,
+      totalDuration: 60,
+      autoDistributeTime: true,
+      shuffleQuestions: false,
+      shuffleOptions: false,
     },
   });
 
-  const isFree = step1Form.watch("isFree");
+  const accessType = step1Form.watch("accessType") || "free";
+  const visibleTo = step1Form.watch("visibleTo") || [];
+
+  const toggleVisibleTo = (catValue: string) => {
+    const current = step1Form.getValues("visibleTo") || [];
+    const updated = current.includes(catValue)
+      ? current.filter((c) => c !== catValue)
+      : [...current, catValue];
+    step1Form.setValue("visibleTo", updated, { shouldValidate: true });
+  };
+
+  // ── ChemDraw Modal State ───────────────────────────────────
+  const [chemModalOpen, setChemModalOpen] = useState(false);
+  const [chemModalTarget, setChemModalTarget] = useState<{
+    type: "question" | "option";
+    optId?: string;
+    existingIdx?: number;
+    initialValue?: ChemicalContent;
+  } | null>(null);
 
   // ── Hydrate forms from existing exam data ──────────────────
   useEffect(() => {
     axios.get(`/api/exams/${id}`)
       .then(r => {
         const e = r.data.data;
+        const examAccessType = e.accessType || (e.isFree ? "free" : "restricted");
+        const examVisibleTo = e.visibleTo && e.visibleTo.length > 0 ? e.visibleTo : (e.category ? [e.category] : []);
 
         // Hydrate step1 form
         step1Form.reset({
@@ -165,7 +201,9 @@ export default function EditExamPage() {
           category:               e.category            ?? "",
           subject:                e.subject             ?? "",
           difficulty:             e.difficulty          ?? "medium",
-          isFree:                 e.isFree              ?? true,
+          accessType:             examAccessType,
+          visibleTo:              examVisibleTo,
+          isFree:                 e.isFree              ?? (examAccessType === "free"),
           price:                  e.price               ?? 0,
           passingPercentage:      e.passingPercentage   ?? 40,
           maxAttempts:            e.maxAttempts         ?? 1,
@@ -187,7 +225,8 @@ export default function EditExamPage() {
         // Hydrate step1Data & step2Data so Preview (step 4) works immediately
         setStep1Data({
           title: e.title, description: e.description, category: e.category,
-          subject: e.subject, difficulty: e.difficulty, isFree: e.isFree,
+          subject: e.subject, difficulty: e.difficulty, accessType: examAccessType,
+          visibleTo: examVisibleTo, isFree: e.isFree,
           price: e.price, passingPercentage: e.passingPercentage,
           maxAttempts: e.maxAttempts, negativeMarkingEnabled: e.negativeMarkingEnabled,
           resultVisibility: e.resultVisibility, showExplanations: e.showExplanations,
@@ -198,16 +237,18 @@ export default function EditExamPage() {
           shuffleQuestions: e.shuffleQuestions, shuffleOptions: e.shuffleOptions,
         });
 
-        // Hydrate questions — map DB shape → QuestionForm shape
+        // Hydrate questions — map DB shape → QuestionForm shape (including ChemDraw)
         if (Array.isArray(e.questions) && e.questions.length > 0) {
           setQuestions(e.questions.map((q: any, idx: number) => ({
-            questionText:   q.questionText  ?? "",
-            questionImage:  q.questionImage,
-            questionType:   q.questionType  ?? "single",
+            questionText:              q.questionText  ?? "",
+            questionImage:             q.questionImage,
+            questionChemicalContents:  Array.isArray(q.questionChemicalContents) ? q.questionChemicalContents : [],
+            questionType:              q.questionType  ?? "single",
             options:        Array.isArray(q.options) ? q.options.map((o: any) => ({
-              id:    o.id   ?? o._id ?? String(o.label ?? "A"),
-              text:  o.text ?? "",
-              image: o.image,
+              id:              o.id   ?? o._id ?? String(o.label ?? "A"),
+              text:            o.text ?? "",
+              image:           o.image,
+              chemicalContent: o.chemicalContent,
             })) : [
               { id: "A", text: "" }, { id: "B", text: "" },
               { id: "C", text: "" }, { id: "D", text: "" },
@@ -240,6 +281,36 @@ export default function EditExamPage() {
         ? { ...q, options: q.options.map(o => o.id === optId ? { ...o, image: imageUrl } : o) }
         : q
     ));
+  };
+
+  // ── ChemDraw Content Helpers ───────────────────────────────
+  const addQuestionChemContent = (content: ChemicalContent) => {
+    const q = questions[currentQIdx];
+    const currentList = q.questionChemicalContents || [];
+    updateQuestion("questionChemicalContents", [...currentList, content]);
+  };
+
+  const updateQuestionChemContent = (index: number, content: ChemicalContent) => {
+    const q = questions[currentQIdx];
+    const currentList = [...(q.questionChemicalContents || [])];
+    currentList[index] = content;
+    updateQuestion("questionChemicalContents", currentList);
+  };
+
+  const removeQuestionChemContent = (index: number) => {
+    const q = questions[currentQIdx];
+    const currentList = (q.questionChemicalContents || []).filter((_, idx) => idx !== index);
+    updateQuestion("questionChemicalContents", currentList);
+  };
+
+  const setOptionChemContent = (optId: string, content: ChemicalContent | undefined) => {
+    setQuestions(prev =>
+      prev.map((q, i) =>
+        i === currentQIdx
+          ? { ...q, options: q.options.map(o => o.id === optId ? { ...o, chemicalContent: content } : o) }
+          : q
+      )
+    );
   };
 
   const toggleCorrectAnswer = (optId: string, qType: string) => {
@@ -282,7 +353,9 @@ export default function EditExamPage() {
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.questionText.trim()) return `Question ${i + 1}: Question text is required`;
-      if (q.options.some(o => !o.text.trim() && !o.image)) return `Question ${i + 1}: All options must have text or an image`;
+      if (q.options.some(o => !o.text.trim() && !o.image && !o.chemicalContent)) {
+        return `Question ${i + 1}: All options must have text, an image, or a chemical structure`;
+      }
       if (q.correctAnswers.length === 0) return `Question ${i + 1}: Please select at least one correct answer`;
     }
     return null;
@@ -411,17 +484,127 @@ export default function EditExamPage() {
                       <textarea id="exam-description" rows={3} placeholder="Describe what this exam covers..." className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none" {...step1Form.register("description")} />
                       {step1Form.formState.errors.description && <p className="text-xs text-destructive mt-1">⚠ {step1Form.formState.errors.description.message}</p>}
                     </div>
-                    <div className="sm:col-span-2 p-4 rounded-xl bg-muted/50 border border-border space-y-3">
-                      <h3 className="font-semibold text-sm text-foreground">Pricing</h3>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="is-free" {...step1Form.register("isFree")} className="w-4 h-4 accent-primary" />
-                        <span className="text-sm">This exam is free</span>
-                      </label>
-                      {!isFree && (
-                        <Input id="exam-price" label={`Price (in paise, e.g., 19900 = ${CURRENCY_SYMBOL}199)`} type="number" min={0}
-                          {...step1Form.register("price", { valueAsNumber: true })}
-                          hint={`${CURRENCY_SYMBOL}${((step1Form.watch("price") ?? 0) / 100).toFixed(2)}`}
-                          error={step1Form.formState.errors.price?.message} />
+                    {/* Access Type & Visibility */}
+                    <div className="sm:col-span-2 p-4 rounded-xl bg-muted/50 border border-border space-y-4">
+                      <div>
+                        <h3 className="font-semibold text-sm text-foreground">Access Type & Student Visibility</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Control whether this exam is free for all students or restricted to specific assigned exam categories.
+                        </p>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <label
+                          className={cn(
+                            "flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all",
+                            accessType === "free"
+                              ? "border-primary bg-primary/10 shadow-xs"
+                              : "border-border hover:bg-muted/40"
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="editAccessTypeRadio"
+                            value="free"
+                            checked={accessType === "free"}
+                            onChange={() => {
+                              step1Form.setValue("accessType", "free", { shouldValidate: true });
+                              step1Form.setValue("isFree", true);
+                              step1Form.setValue("price", 0);
+                            }}
+                            className="mt-0.5 w-4 h-4 accent-primary"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">Free Exam</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Accessible to all registered students without category restrictions
+                            </div>
+                          </div>
+                        </label>
+
+                        <label
+                          className={cn(
+                            "flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all",
+                            accessType === "restricted"
+                              ? "border-primary bg-primary/10 shadow-xs"
+                              : "border-border hover:bg-muted/40"
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="editAccessTypeRadio"
+                            value="restricted"
+                            checked={accessType === "restricted"}
+                            onChange={() => {
+                              step1Form.setValue("accessType", "restricted", { shouldValidate: true });
+                              step1Form.setValue("isFree", false);
+                              const currentCat = step1Form.getValues("category");
+                              const curVis = step1Form.getValues("visibleTo") || [];
+                              if (curVis.length === 0 && currentCat) {
+                                step1Form.setValue("visibleTo", [currentCat], { shouldValidate: true });
+                              }
+                            }}
+                            className="mt-0.5 w-4 h-4 accent-primary"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">Restricted Exam</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Accessible only to students with matching assigned exam categories
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+
+                      {accessType === "restricted" && (
+                        <div className="pt-3 space-y-2.5 border-t border-border">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-foreground uppercase tracking-wide">
+                              Visible To <span className="text-destructive">*</span>
+                            </label>
+                            <span className="text-[11px] text-muted-foreground">
+                              {visibleTo.length} categor{visibleTo.length === 1 ? "y" : "ies"} selected
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Select which student exam groups can view and attempt this exam:
+                          </p>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                            {EXAM_CATEGORIES.map((cat) => {
+                              const isChecked = visibleTo.includes(cat.value);
+                              return (
+                                <button
+                                  key={cat.value}
+                                  type="button"
+                                  onClick={() => toggleVisibleTo(cat.value)}
+                                  className={cn(
+                                    "flex items-center gap-2 p-2.5 rounded-lg border text-left text-xs transition-all",
+                                    isChecked
+                                      ? "border-primary bg-primary/15 text-primary font-semibold"
+                                      : "border-border hover:border-primary/40 text-foreground bg-background"
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      "w-4 h-4 rounded border flex items-center justify-center text-[10px] shrink-0",
+                                      isChecked
+                                        ? "bg-primary border-primary text-primary-foreground"
+                                        : "border-muted-foreground/50"
+                                    )}
+                                  >
+                                    {isChecked && "✓"}
+                                  </div>
+                                  <span className="truncate">{cat.icon} {cat.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {step1Form.formState.errors.visibleTo && (
+                            <p className="text-xs text-destructive mt-1">
+                              ⚠ {step1Form.formState.errors.visibleTo.message}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                     <div className="sm:col-span-2 p-4 rounded-xl bg-muted/50 border border-border space-y-3">
@@ -505,7 +688,11 @@ export default function EditExamPage() {
                       className={cn("w-full text-left px-2.5 py-2 rounded-lg text-xs transition-all",
                         currentQIdx === i ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80",
                         q.correctAnswers.length > 0 && currentQIdx !== i && "border-l-2 border-green-500")}>
-                      <div className="font-bold flex items-center gap-1">Q{i + 1}{q.questionImage && <ImageIcon className="h-3 w-3 opacity-60" />}</div>
+                      <div className="font-bold flex items-center gap-1">
+                        Q{i + 1}
+                        {q.questionChemicalContents && q.questionChemicalContents.length > 0 && <Atom className="h-3 w-3 opacity-75 text-amber-300" />}
+                        {q.questionImage && <ImageIcon className="h-3 w-3 opacity-60" />}
+                      </div>
                       <div className="truncate opacity-70">{q.questionText || "(empty)"}</div>
                     </button>
                   ))}
@@ -552,10 +739,93 @@ export default function EditExamPage() {
                           className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none" />
                       </div>
 
-                      {/* Question Image */}
-                      <div>
-                        <label className="block text-sm font-medium text-foreground">Question Image <span className="text-muted-foreground text-xs">(optional)</span></label>
-                        <QuickImageUpload id={`q-img-${currentQIdx}`} label="Upload image for this question" value={currentQ.questionImage} onChange={url => updateQuestion("questionImage", url)} />
+                      {/* Question Media: Image & ChemDraw Chemical Structures */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-sm font-medium text-foreground">
+                            Question Media &amp; Chemistry Diagrams <span className="text-muted-foreground text-xs">(optional)</span>
+                          </label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-7 gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
+                            onClick={() => {
+                              setChemModalTarget({ type: "question" });
+                              setChemModalOpen(true);
+                            }}
+                          >
+                            <Atom className="h-3.5 w-3.5" />
+                            + Add ChemDraw Content
+                          </Button>
+                        </div>
+
+                        {/* ChemDraw Chemical Structures List (Question Level) */}
+                        {currentQ.questionChemicalContents && currentQ.questionChemicalContents.length > 0 && (
+                          <div className="space-y-2 p-3 rounded-xl bg-muted/40 border border-border">
+                            <div className="text-xs font-semibold text-foreground flex items-center justify-between">
+                              <span>ChemDraw Structures ({currentQ.questionChemicalContents.length})</span>
+                              <span className="text-[10px] text-muted-foreground">Original CDXML preserved</span>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-2.5">
+                              {currentQ.questionChemicalContents.map((chem, chemIdx) => (
+                                <div
+                                  key={chemIdx}
+                                  className="relative group p-2.5 rounded-lg border border-border bg-card hover:border-primary/50 transition-all flex flex-col items-center"
+                                >
+                                  <div className="w-full flex items-center justify-between text-[11px] font-medium text-muted-foreground mb-1">
+                                    <span className="truncate max-w-[140px] font-semibold text-foreground">
+                                      {chem.altText || `Structure #${chemIdx + 1}`}
+                                    </span>
+                                    <span className="uppercase text-[9px] px-1.5 py-0.5 rounded bg-muted">
+                                      {chem.renderedFormat}
+                                    </span>
+                                  </div>
+
+                                  {/* White background chemical container */}
+                                  <div className="bg-white p-2 rounded border border-gray-200 w-full flex items-center justify-center min-h-[90px]">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={chem.renderedUrl}
+                                      alt={chem.altText || "Chemical structure"}
+                                      className="max-h-24 max-w-full object-contain"
+                                    />
+                                  </div>
+
+                                  <div className="w-full flex items-center justify-end gap-1.5 mt-2 pt-1.5 border-t border-border/50">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 text-[10px] px-2 text-muted-foreground hover:text-foreground"
+                                      onClick={() => {
+                                        setChemModalTarget({
+                                          type: "question",
+                                          existingIdx: chemIdx,
+                                          initialValue: chem,
+                                        });
+                                        setChemModalOpen(true);
+                                      }}
+                                    >
+                                      Replace
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 text-[10px] px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                      onClick={() => removeQuestionChemContent(chemIdx)}
+                                    >
+                                      <Trash2 className="h-3 w-3 mr-1" />
+                                      Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                       </div>
 
                       {/* Options */}
@@ -564,23 +834,89 @@ export default function EditExamPage() {
                           <label className="text-sm font-medium text-foreground">Options — <span className="text-muted-foreground text-xs">click the circle to mark correct</span></label>
                           {currentQ.questionType === "multiple" && <span className="text-xs text-muted-foreground">Select all correct answers</span>}
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {currentQ.options.map((opt, optIdx) => {
                             const isCorrect = currentQ.correctAnswers.includes(opt.id);
                             return (
-                              <div key={opt.id} className={cn("p-2.5 rounded-lg border-2 transition-all space-y-2", isCorrect ? "border-green-500 bg-green-50 dark:bg-green-900/20" : "border-border")}>
+                              <div key={opt.id} className={cn("p-3 rounded-xl border-2 transition-all space-y-2.5", isCorrect ? "border-green-500 bg-green-50/60 dark:bg-green-900/10" : "border-border bg-card")}>
                                 <div className="flex items-center gap-2">
                                   <button type="button" onClick={() => toggleCorrectAnswer(opt.id, currentQ.questionType)} id={`correct-${currentQIdx}-${optIdx}`}
                                     className={cn("w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 transition-all",
-                                      isCorrect ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 text-muted-foreground")}>
+                                      isCorrect ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 text-muted-foreground hover:border-primary")}>
                                     {opt.id}
                                   </button>
                                   <input type="text" placeholder={`Option ${opt.id} text`} value={opt.text} id={`opt-${currentQIdx}-${opt.id}`}
                                     onChange={e => updateQuestion("options", currentQ.options.map(o => o.id === opt.id ? { ...o, text: e.target.value } : o))}
                                     className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
-                                  {opt.image && <ImageIcon className="h-4 w-4 text-primary shrink-0" />}
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 text-[11px] gap-1 shrink-0 border-primary/30 text-primary hover:bg-primary/5"
+                                    onClick={() => {
+                                      setChemModalTarget({
+                                        type: "option",
+                                        optId: opt.id,
+                                        initialValue: opt.chemicalContent,
+                                      });
+                                      setChemModalOpen(true);
+                                    }}
+                                  >
+                                    <Atom className="h-3 w-3" />
+                                    {opt.chemicalContent ? "Edit ChemDraw" : "+ ChemDraw"}
+                                  </Button>
                                 </div>
-                                <QuickImageUpload id={`opt-img-${currentQIdx}-${opt.id}`} label={`Add image to Option ${opt.id}`} value={opt.image} onChange={url => updateOptionImage(opt.id, url)} />
+
+                                {/* Option ChemDraw Chemical Structure Preview */}
+                                {opt.chemicalContent && (
+                                  <div className="p-2 rounded-lg border border-primary/30 bg-primary/5 flex items-center justify-between gap-3 max-w-full">
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <div className="bg-white p-1.5 rounded border border-gray-200 shrink-0 flex items-center justify-center">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                          src={opt.chemicalContent.renderedUrl}
+                                          alt={opt.chemicalContent.altText || `Option ${opt.id} structure`}
+                                          className="max-h-16 max-w-[180px] w-auto h-auto object-contain"
+                                        />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-semibold text-foreground truncate max-w-[200px]">
+                                          {opt.chemicalContent.altText || `Option ${opt.id} Structure`}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-mono">
+                                          {opt.chemicalContent.renderedFormat} · ChemDraw
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 text-[10px] px-2 text-muted-foreground hover:text-foreground"
+                                        onClick={() => {
+                                          setChemModalTarget({
+                                            type: "option",
+                                            optId: opt.id,
+                                            initialValue: opt.chemicalContent,
+                                          });
+                                          setChemModalOpen(true);
+                                        }}
+                                      >
+                                        Replace
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 text-[10px] px-2 text-destructive hover:text-destructive"
+                                        onClick={() => setOptionChemContent(opt.id, undefined)}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
@@ -676,13 +1012,27 @@ export default function EditExamPage() {
                 {/* Questions Preview */}
                 <div className="p-4 rounded-xl bg-muted/50">
                   <h3 className="font-semibold text-sm mb-3">Questions ({questions.length})</h3>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
                     {questions.map((q, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-card border border-border space-y-2">
+                      <div key={i} className="p-3.5 rounded-lg bg-card border border-border space-y-2.5">
                         <div className="flex items-start gap-2">
                           <span className="font-bold text-xs text-muted-foreground w-6 shrink-0 pt-0.5">Q{i + 1}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-foreground">{q.questionText || "(empty)"}</p>
+                            <p className="text-sm font-medium text-foreground whitespace-pre-wrap">{q.questionText || "(empty)"}</p>
+
+                            {/* ChemDraw Chemical Structures Preview */}
+                            {q.questionChemicalContents && q.questionChemicalContents.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {q.questionChemicalContents.map((chem, chemIdx) => (
+                                  <ChemicalContentRenderer
+                                    key={chemIdx}
+                                    content={chem}
+                                    showLabel
+                                  />
+                                ))}
+                              </div>
+                            )}
+
                             {q.questionImage && (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={q.questionImage} alt="question" className="mt-1.5 max-h-24 rounded-md object-contain" />
@@ -692,12 +1042,21 @@ export default function EditExamPage() {
                             {q.correctAnswers.length > 0 ? `✓ ${q.marks}m` : "No answer"}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-1 ml-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-8">
                           {q.options.map(opt => (
-                            <div key={opt.id} className={cn("flex items-center gap-1.5 text-xs px-2 py-1 rounded-md",
-                              q.correctAnswers.includes(opt.id) ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-muted text-muted-foreground")}>
-                              <span className="font-bold">{opt.id}.</span>
-                              <span className="truncate">{opt.text || (opt.image ? "[Image]" : "(empty)")}</span>
+                            <div key={opt.id} className={cn("p-2 rounded-md space-y-1 text-xs",
+                              q.correctAnswers.includes(opt.id)
+                                ? "bg-green-100/70 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-800"
+                                : "bg-muted text-muted-foreground")}>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold">{opt.id}.</span>
+                                <span className="truncate">{opt.text || (opt.chemicalContent ? "[ChemDraw Structure]" : opt.image ? "[Image]" : "(empty)")}</span>
+                              </div>
+                              {opt.chemicalContent && (
+                                <div className="mt-1">
+                                  <ChemicalContentRenderer content={opt.chemicalContent} isOption />
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -723,6 +1082,36 @@ export default function EditExamPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── ChemDraw Upload Modal ── */}
+      {chemModalOpen && (
+        <ChemDrawUploader
+          isOpen={chemModalOpen}
+          title={
+            chemModalTarget?.type === "option"
+              ? `ChemDraw Structure for Option ${chemModalTarget.optId}`
+              : "Add ChemDraw Structure to Question"
+          }
+          initialValue={chemModalTarget?.initialValue}
+          onClose={() => {
+            setChemModalOpen(false);
+            setChemModalTarget(null);
+          }}
+          onInsert={(content) => {
+            if (chemModalTarget?.type === "question") {
+              if (chemModalTarget.existingIdx !== undefined) {
+                updateQuestionChemContent(chemModalTarget.existingIdx, content);
+              } else {
+                addQuestionChemContent(content);
+              }
+            } else if (chemModalTarget?.type === "option" && chemModalTarget.optId) {
+              setOptionChemContent(chemModalTarget.optId, content);
+            }
+            setChemModalOpen(false);
+            setChemModalTarget(null);
+          }}
+        />
+      )}
     </div>
   );
 }

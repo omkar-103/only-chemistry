@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import Link from "next/link";
 import { toast } from "@/hooks/useToast";
+import { ChemicalContentRenderer } from "@/components/ui/ChemicalContentRenderer";
 
 export default function AdminExamViewPage() {
   const { id } = useParams() as { id: string };
@@ -196,6 +197,20 @@ export default function AdminExamViewPage() {
                   <span className="text-xs font-bold text-muted-foreground w-7 shrink-0 pt-0.5">Q{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground leading-relaxed whitespace-pre-wrap">{q.questionText}</p>
+
+                    {/* Question ChemDraw Chemical Structures */}
+                    {Array.isArray(q.questionChemicalContents) && q.questionChemicalContents.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {q.questionChemicalContents.map((chem: any, chemIdx: number) => (
+                          <ChemicalContentRenderer
+                            key={chemIdx}
+                            content={chem}
+                            showLabel
+                          />
+                        ))}
+                      </div>
+                    )}
+
                     {q.questionImage && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={q.questionImage} alt="Question" className="mt-2 max-h-40 rounded-lg object-contain border border-border" />
@@ -228,7 +243,12 @@ export default function AdminExamViewPage() {
                         {opt.id}.
                       </span>
                       <div className="flex-1 min-w-0">
-                        <span>{opt.text || <em className="opacity-50">(empty)</em>}</span>
+                        {opt.text && <span>{opt.text}</span>}
+                        {opt.chemicalContent && (
+                          <div className="mt-1">
+                            <ChemicalContentRenderer content={opt.chemicalContent} isOption />
+                          </div>
+                        )}
                         {opt.image && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={opt.image} alt={`Option ${opt.id}`} className="mt-1.5 max-h-20 rounded object-contain" />

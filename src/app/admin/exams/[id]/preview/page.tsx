@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import axios from "axios";
 import Link from "next/link";
+import { ChemicalContentRenderer } from "@/components/ui/ChemicalContentRenderer";
 
 type QuestionStatus = "not_visited" | "visited" | "answered" | "marked" | "answered_marked";
 
@@ -263,6 +264,19 @@ export default function ExamPreviewPage() {
                 {/* Question text */}
                 <div className="mb-6 p-4 rounded-xl bg-card border border-border">
                   <p className="text-base font-medium text-foreground leading-relaxed whitespace-pre-wrap">{q.questionText}</p>
+
+                  {/* ChemDraw Chemical Structures */}
+                  {Array.isArray(q.questionChemicalContents) && q.questionChemicalContents.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {q.questionChemicalContents.map((chem: any, chemIdx: number) => (
+                        <ChemicalContentRenderer
+                          key={chemIdx}
+                          content={chem}
+                        />
+                      ))}
+                    </div>
+                  )}
+
                   {q.questionImage && (
                     <img src={q.questionImage} alt="Question" className="mt-3 max-h-64 rounded-lg object-contain border border-border" />
                   )}
@@ -289,7 +303,12 @@ export default function ExamPreviewPage() {
                           {String.fromCharCode(65 + oi)}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm leading-relaxed">{opt.text}</p>
+                          {opt.text && <p className="text-sm leading-relaxed">{opt.text}</p>}
+                          {opt.chemicalContent && (
+                            <div className="mt-1">
+                              <ChemicalContentRenderer content={opt.chemicalContent} isOption />
+                            </div>
+                          )}
                           {opt.image && <img src={opt.image} alt={`Option ${oi+1}`} className="mt-2 max-h-32 rounded object-contain" />}
                         </div>
                       </motion.button>
