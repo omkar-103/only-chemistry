@@ -14,6 +14,7 @@ import { IQuestion } from "@/types";
 import { ROUTES } from "@/constants";
 import { cn } from "@/lib/utils/cn";
 import axios from "axios";
+import { ChemicalContentRenderer } from "@/components/ui/ChemicalContentRenderer";
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -112,7 +113,10 @@ export default function ExamAttemptPage({ params }: Params) {
 
           setResponses(initial);
         })
-        .catch(() => router.push(ROUTES.STUDENT.EXAMS))
+        .catch((err) => {
+          const msg = err.response?.data?.message || "You do not have access to this exam.";
+          router.push(ROUTES.STUDENT.EXAMS);
+        })
         .finally(() => setLoading(false));
     });
   }, [params, router]);
@@ -463,6 +467,19 @@ export default function ExamAttemptPage({ params }: Params) {
                   <p className="text-base font-medium text-foreground leading-relaxed whitespace-pre-wrap">
                     {currentQuestion.questionText}
                   </p>
+
+                  {/* ChemDraw Chemical Structures */}
+                  {Array.isArray(currentQuestion.questionChemicalContents) && currentQuestion.questionChemicalContents.length > 0 && (
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      {currentQuestion.questionChemicalContents.map((chem, chemIdx) => (
+                        <ChemicalContentRenderer
+                          key={chemIdx}
+                          content={chem}
+                        />
+                      ))}
+                    </div>
+                  )}
+
                   {currentQuestion.questionImage && (
                     <img
                       src={currentQuestion.questionImage}
@@ -498,12 +515,19 @@ export default function ExamAttemptPage({ params }: Params) {
                           {String.fromCharCode(65 + optIdx)}
                         </div>
                         <div className="flex-1">
-                          <p className={cn(
-                            "text-sm leading-relaxed",
-                            isSelected ? "text-foreground font-medium" : "text-foreground"
-                          )}>
-                            {option.text}
-                          </p>
+                          {option.text && (
+                            <p className={cn(
+                              "text-sm leading-relaxed",
+                              isSelected ? "text-foreground font-medium" : "text-foreground"
+                            )}>
+                              {option.text}
+                            </p>
+                          )}
+                          {option.chemicalContent && (
+                            <div className="mt-1">
+                              <ChemicalContentRenderer content={option.chemicalContent} isOption />
+                            </div>
+                          )}
                           {option.image && (
                             <img src={option.image} alt={`Option ${optIdx + 1}`} className="mt-2 max-h-32 rounded object-contain" />
                           )}
