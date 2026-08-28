@@ -70,12 +70,14 @@ export async function POST(req: NextRequest) {
     const deviceInfo = parseUserAgent(userAgent, ip);
 
     // Update user: set new session, lastLogin, deviceInfo
+    const now = new Date();
     await User.findByIdAndUpdate(user._id, {
       $set: {
         sessionToken,
         sessionTokenExpiry: sessionExpiry,
-        lastLogin: new Date(),
-        lastActive: new Date(),
+        lastLogin: now,
+        lastActive: now,
+        lastActiveAt: now,
         deviceInfo,
       },
     });
@@ -101,6 +103,13 @@ export async function POST(req: NextRequest) {
       userAgent,
     });
 
+    const assigned = Array.from(
+      new Set([
+        ...(user.assignedExams || []),
+        ...(user.assignedCategories || []),
+      ])
+    );
+
     // Build response with httpOnly cookie for refresh token
     const response = NextResponse.json({
       success: true,
@@ -115,7 +124,10 @@ export async function POST(req: NextRequest) {
           role: user.role,
           avatar: user.avatar,
           purchasedExams: user.purchasedExams || [],
-          assignedCategories: user.assignedCategories || [],
+          assignedExams: assigned,
+          assignedCategories: assigned,
+          lastActive: now.toISOString(),
+          lastActiveAt: now.toISOString(),
         },
       },
     });

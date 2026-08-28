@@ -72,7 +72,7 @@ export async function getAuthUser(
     // Verify the user still exists and is active
     await connectDB();
     const user = await User.findById(decoded.userId)
-      .select("+sessionToken isActive")
+      .select("+sessionToken isActive lastActive lastActiveAt")
       .lean();
 
     if (!user || !user.isActive) return null;
@@ -82,6 +82,15 @@ export async function getAuthUser(
     // allow access to prevent lockouts.
     if (user.sessionToken && decoded.sessionToken && user.sessionToken !== decoded.sessionToken) {
       return null;
+    }
+
+    // Sensibly throttled Last Active update (at most once every 3 minutes per active session)
+    const now = new Date();
+    const prevActive = (user as any).lastActiveAt || (user as any).lastActive;
+    if (!prevActive || now.getTime() - new Date(prevActive).getTime() > 3 * 60 * 1000) {
+      User.findByIdAndUpdate(decoded.userId, {
+        $set: { lastActive: now, lastActiveAt: now },
+      }).catch(() => {});
     }
 
     return decoded;
