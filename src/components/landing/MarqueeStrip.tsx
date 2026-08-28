@@ -14,8 +14,8 @@ const ITEMS = [
   "JEE Advanced",
   "GATE",
   "MHT-CET",
-  "CSIR NET",
-  "UGC NET",
+  "IIT JAM",
+  "NET",
   "SET",
 ];
 
@@ -31,7 +31,7 @@ export default function MarqueeStrip({ reversed = false }: MarqueeStripProps) {
         borderTop: "4px solid #000",
         borderBottom: "4px solid #000",
         overflow: "hidden",
-        padding: "14px 0",
+        padding: "12px 0",
         fontFamily: "var(--font-neo)",
       }}
     >
@@ -48,7 +48,7 @@ export default function MarqueeStrip({ reversed = false }: MarqueeStripProps) {
               gap: "0.75rem",
               whiteSpace: "nowrap",
               fontWeight: 800,
-              fontSize: "1rem",
+              fontSize: "0.9rem",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               color: i % 2 === 0 ? "#fff" : "#FFD93D",

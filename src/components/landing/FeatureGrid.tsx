@@ -19,37 +19,37 @@ import {
 
 const FEATURES = [
   {
-    icon: <BookOpen size={26} strokeWidth={2.5} />,
+    icon: <BookOpen size={23} strokeWidth={2.5} />,
     title: "Comprehensive Study Material",
     desc: "From NCERT fundamentals to advanced competitive level. Structured topic-wise for every major exam.",
     bg: "#FFD93D",
   },
   {
-    icon: <FlaskConical size={26} strokeWidth={2.5} />,
+    icon: <FlaskConical size={23} strokeWidth={2.5} />,
     title: "Topic-Wise Practice",
     desc: "Thousands of questions with detailed solutions. Organised by chapter, difficulty and exam pattern.",
     bg: "#fff",
   },
   {
-    icon: <BarChart3 size={26} strokeWidth={2.5} />,
+    icon: <BarChart3 size={23} strokeWidth={2.5} />,
     title: "Mock Tests",
     desc: "Realistic exam patterns with full-length mock tests. Anti-cheat fullscreen mode with auto-submission.",
     bg: "#C4B5FD",
   },
   {
-    icon: <PlayCircle size={26} strokeWidth={2.5} />,
+    icon: <PlayCircle size={23} strokeWidth={2.5} />,
     title: "Video Lectures",
     desc: "Concepts explained by expert chemistry faculty. Accessible by assigned course category.",
     bg: "#fff",
   },
   {
-    icon: <TrendingUp size={26} strokeWidth={2.5} />,
+    icon: <TrendingUp size={23} strokeWidth={2.5} />,
     title: "Performance Tracking",
     desc: "Detailed score reports, question-wise analysis and time management insights to help you improve.",
     bg: "#FFD93D",
   },
   {
-    icon: <MessageSquare size={26} strokeWidth={2.5} />,
+    icon: <MessageSquare size={23} strokeWidth={2.5} />,
     title: "Expert Doubt Support",
     desc: "Private doubt resolution system. Submit your chemistry questions and get personalised expert answers.",
     bg: "#FF6B6B",
@@ -62,7 +62,7 @@ export default function FeatureGrid() {
       id="features"
       style={{
         background: "#000",
-        padding: "4rem 0",
+        padding: "3.5rem 0",
         fontFamily: "var(--font-neo)",
         width: "100%",
       }}
@@ -71,36 +71,36 @@ export default function FeatureGrid() {
         style={{
           maxWidth: "88rem",
           margin: "0 auto",
-          padding: "0 1.25rem",
+          padding: "0 1.375rem",
           width: "100%",
           boxSizing: "border-box",
         }}
       >
         {/* Section header */}
-        <div style={{ marginBottom: "2.5rem" }}>
+        <div style={{ marginBottom: "2.75rem" }}>
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "0.4rem",
-              border: "3px solid #000",
+              gap: "0.385rem",
+              border: "2.2px solid #000",
               borderRadius: "9999px",
               background: "#FFD93D",
               fontFamily: "var(--font-neo)",
               fontWeight: 700,
-              fontSize: "0.65rem",
+              fontSize: "0.6rem",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              padding: "0.3rem 0.75rem",
+              padding: "0.25rem 0.65rem",
               boxShadow: "2px 2px 0 #000",
-              marginBottom: "0.75rem",
+              marginBottom: "0.65rem",
             }}
           >
             ✦ Features
           </div>
           <h2
             style={{
-              fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+              fontSize: "clamp(1.6rem, 4.5vw, 3.15rem)",
               fontWeight: 900,
               letterSpacing: "-0.04em",
               textTransform: "uppercase",
@@ -139,9 +139,9 @@ export default function FeatureGrid() {
               transition={{ duration: 0.3, delay: i * 0.06 }}
               style={{
                 background: feat.bg,
-                border: "4px solid #fff",
-                boxShadow: "6px 6px 0 #fff",
-                padding: "1.5rem",
+                border: "3px solid #fff",
+                boxShadow: "5px 5px 0 #fff",
+                padding: "1.35rem",
                 minWidth: 0,
                 boxSizing: "border-box",
                 transition: "transform 120ms ease, box-shadow 120ms ease",
@@ -154,11 +154,11 @@ export default function FeatureGrid() {
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 48,
-                  height: 48,
-                  border: "3px solid #000",
+                  width: 43,
+                  height: 43,
+                  border: "2px solid #000",
                   background: "#000",
-                  marginBottom: "1rem",
+                  marginBottom: "0.9rem",
                   boxShadow: "2px 2px 0 #000",
                   color: "#fff",
                   flexShrink: 0,
@@ -170,11 +170,11 @@ export default function FeatureGrid() {
               <h3
                 style={{
                   fontWeight: 900,
-                  fontSize: "clamp(0.85rem, 2vw, 1rem)",
+                  fontSize: "clamp(0.78rem, 2vw, 0.9rem)",
                   letterSpacing: "-0.01em",
                   textTransform: "uppercase",
                   color: "#000",
-                  marginBottom: "0.4rem",
+                  marginBottom: "0.35rem",
                   lineHeight: 1.2,
                 }}
               >
@@ -182,7 +182,7 @@ export default function FeatureGrid() {
               </h3>
               <p
                 style={{
-                  fontSize: "0.8rem",
+                  fontSize: "0.73rem",
                   fontWeight: 500,
                   color: "#222",
                   lineHeight: 1.6,

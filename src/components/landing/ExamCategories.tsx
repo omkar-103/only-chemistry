@@ -17,8 +17,8 @@ const DESCRIPTIONS: Record<string, string> = {
   "JEE Advanced": "IIT admission — most rigorous level",
   "GATE":         "Graduate aptitude — M.Tech / PSU gateway",
   "MHT-CET":      "Maharashtra state engineering & pharmacy",
-  "CSIR NET":     "National eligibility — JRF + lectureship",
-  "UGC NET":      "University grants — assistant professor",
+  "IIT JAM":      "Joint admission test for Masters at IITs",
+  "NET":          "National eligibility test — lectureship & JRF",
   "SET":          "State eligibility test — college lecturers",
 };
 
@@ -28,7 +28,7 @@ export default function ExamCategories() {
       id="categories"
       style={{
         background: "var(--neo-bg)",
-        padding: "4rem 0",
+        padding: "3.5rem 0",
         borderBottom: "4px solid #000",
         fontFamily: "var(--font-neo)",
         width: "100%",
@@ -44,30 +44,30 @@ export default function ExamCategories() {
         }}
       >
         {/* Section header */}
-        <div style={{ marginBottom: "2.5rem" }}>
+        <div style={{ marginBottom: "2.25rem" }}>
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "0.4rem",
-              border: "3px solid #000",
+              gap: "0.35rem",
+              border: "2px solid #000",
               borderRadius: "9999px",
               background: "#FFD93D",
               fontFamily: "var(--font-neo)",
               fontWeight: 700,
-              fontSize: "0.65rem",
+              fontSize: "0.6rem",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              padding: "0.3rem 0.75rem",
+              padding: "0.25rem 0.65rem",
               boxShadow: "2px 2px 0 #000",
-              marginBottom: "0.75rem",
+              marginBottom: "0.65rem",
             }}
           >
             📋 Exam Catalogue
           </div>
           <h2
             style={{
-              fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+              fontSize: "clamp(1.6rem, 4.5vw, 3.15rem)",
               fontWeight: 900,
               letterSpacing: "-0.04em",
               textTransform: "uppercase",
@@ -79,9 +79,9 @@ export default function ExamCategories() {
             <span
               style={{
                 background: "#FFD93D",
-                border: "4px solid #000",
-                padding: "0 8px",
-                boxShadow: "4px 4px 0 #000",
+                border: "3px solid #000",
+                padding: "0 7px",
+                boxShadow: "3px 3px 0 #000",
                 display: "inline-block",
               }}
             >
@@ -122,9 +122,9 @@ export default function ExamCategories() {
                 <div
                   style={{
                     background: "#fff",
-                    border: "4px solid #000",
-                    boxShadow: "6px 6px 0 #000",
-                    padding: "1.25rem",
+                    border: "3px solid #000",
+                    boxShadow: "5px 5px 0 #000",
+                    padding: "1.1rem",
                     cursor: "pointer",
                     boxSizing: "border-box",
                     transition: "transform 120ms ease, box-shadow 120ms ease",
@@ -144,12 +144,12 @@ export default function ExamCategories() {
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: 48,
-                      height: 48,
-                      border: "3px solid #000",
+                      width: 43,
+                      height: 43,
+                      border: "2px solid #000",
                       background: "#FFD93D",
-                      fontSize: "1.4rem",
-                      marginBottom: "0.75rem",
+                      fontSize: "1.25rem",
+                      marginBottom: "0.65rem",
                       boxShadow: "2px 2px 0 #000",
                       flexShrink: 0,
                     }}
@@ -160,11 +160,11 @@ export default function ExamCategories() {
                   <h3
                     style={{
                       fontWeight: 900,
-                      fontSize: "clamp(0.9rem, 2vw, 1.05rem)",
+                      fontSize: "clamp(0.82rem, 2vw, 0.95rem)",
                       letterSpacing: "-0.01em",
                       textTransform: "uppercase",
                       color: "#000",
-                      marginBottom: "0.35rem",
+                      marginBottom: "0.3rem",
                       lineHeight: 1.2,
                     }}
                   >
@@ -173,11 +173,11 @@ export default function ExamCategories() {
 
                   <p
                     style={{
-                      fontSize: "0.75rem",
+                      fontSize: "0.7rem",
                       fontWeight: 500,
                       color: "#444",
                       lineHeight: 1.5,
-                      marginBottom: "0.75rem",
+                      marginBottom: "0.65rem",
                     }}
                   >
                     {DESCRIPTIONS[cat.value] ?? "Expert exam preparation"}

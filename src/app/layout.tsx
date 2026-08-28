@@ -31,10 +31,10 @@ export const metadata: Metadata = {
     template: "%s | Only Chemistry",
   },
   description:
-    "Prepare for JEE Main, JEE Advanced, GATE, MHT-CET, CSIR NET, UGC NET, and SET with expert-curated exams, learning videos, and personalized study support. Only Chemistry — OnlyChemistry.com",
+    "Prepare for JEE Main, JEE Advanced, GATE, MHT-CET, IIT JAM, NET, and SET with expert-curated exams, learning videos, and personalized study support. Only Chemistry — OnlyChemistry.com",
   keywords: [
     "Only Chemistry", "OnlyChemistry", "onlychemistry.com",
-    "JEE Main", "JEE Advanced", "GATE", "MHT-CET", "CSIR NET", "UGC NET", "SET",
+    "JEE Main", "JEE Advanced", "GATE", "MHT-CET", "IIT JAM", "NET", "SET",
     "chemistry exam", "online exam portal", "chemistry education",
   ],
   authors: [{ name: "Only Chemistry" }],

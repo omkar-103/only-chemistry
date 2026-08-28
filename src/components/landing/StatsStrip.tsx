@@ -55,7 +55,7 @@ export default function StatsStrip() {
           >
             <div
               style={{
-                fontSize: "clamp(1.1rem, 4vw, 1.8rem)",
+                fontSize: "clamp(1rem, 3.6vw, 1.62rem)",
                 fontWeight: 900,
                 lineHeight: 1,
                 letterSpacing: "-0.02em",
@@ -66,7 +66,7 @@ export default function StatsStrip() {
             </div>
             <div
               style={{
-                fontSize: "clamp(0.55rem, 1.4vw, 0.65rem)",
+                fontSize: "clamp(0.5rem, 1.26vw, 0.58rem)",
                 fontWeight: 700,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",

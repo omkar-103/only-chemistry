@@ -56,8 +56,8 @@ export default function Navbar() {
           style={{
             maxWidth: "88rem",
             margin: "0 auto",
-            padding: "0 1.25rem",
-            height: 64,
+            padding: "0 1.1rem",
+            height: 58,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -80,19 +80,19 @@ export default function Navbar() {
               style={{
                 background: "#FFD93D",
                 border: "3px solid #000",
-                padding: "3px 5px",
+                padding: "2px 4px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}
             >
-              <FlaskConical size={20} color="#000" strokeWidth={2.5} />
+              <FlaskConical size={18} color="#000" strokeWidth={2.5} />
             </div>
             <span
               style={{
                 fontWeight: 900,
-                fontSize: "clamp(0.95rem, 2.5vw, 1.2rem)",
+                fontSize: "clamp(0.86rem, 2.5vw, 1.1rem)",
                 letterSpacing: "-0.02em",
                 color: "#000",
                 whiteSpace: "nowrap",
@@ -114,12 +114,12 @@ export default function Navbar() {
                 href={link.href}
                 style={{
                   fontWeight: 600,
-                  fontSize: "0.78rem",
+                  fontSize: "0.72rem",
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
                   color: "#000",
                   textDecoration: "none",
-                  padding: "6px 9px",
+                  padding: "5px 8px",
                   transition: "background 100ms",
                   whiteSpace: "nowrap",
                 }}
@@ -140,12 +140,12 @@ export default function Navbar() {
               href={ROUTES.LOGIN}
               style={{
                 fontWeight: 700,
-                fontSize: "0.78rem",
+                fontSize: "0.72rem",
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
                 color: "#000",
                 textDecoration: "none",
-                padding: "7px 12px",
+                padding: "6px 10px",
                 border: "2px solid transparent",
                 transition: "border-color 100ms",
                 whiteSpace: "nowrap",
@@ -158,7 +158,7 @@ export default function Navbar() {
             <Link
               href={ROUTES.REGISTER}
               className="neo-btn neo-btn-primary"
-              style={{ fontSize: "0.78rem", padding: "7px 16px" }}
+              style={{ fontSize: "0.72rem", padding: "6px 14px" }}
             >
               Get Started →
             </Link>
@@ -172,8 +172,8 @@ export default function Navbar() {
             onClick={() => setOpen((v) => !v)}
             className="lg:hidden"
             style={{
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               border: "3px solid #000",
               background: open ? "#FFD93D" : "#fff",
               cursor: "pointer",
@@ -222,7 +222,7 @@ export default function Navbar() {
         className="lg:hidden"
         style={{
           position: "fixed",
-          top: 68,
+          top: 62,
           left: 0,
           right: 0,
           bottom: 0,

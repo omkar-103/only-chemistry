@@ -14,7 +14,7 @@ export default function AboutSection() {
       id="about"
       style={{
         background: "var(--neo-bg)",
-        padding: "4rem 0",
+        padding: "3.5rem 0",
         borderBottom: "4px solid #000",
         fontFamily: "var(--font-neo)",
         width: "100%",
@@ -36,9 +36,9 @@ export default function AboutSection() {
           transition={{ duration: 0.45 }}
           style={{
             background: "#000",
-            border: "4px solid #000",
-            boxShadow: "10px 10px 0 #FFD93D",
-            padding: "clamp(1.5rem, 5vw, 3.5rem)",
+            border: "3px solid #000",
+            boxShadow: "9px 9px 0 #FFD93D",
+            padding: "clamp(1.35rem, 5vw, 3.15rem)",
             position: "relative",
             overflow: "hidden", /* clips the decorative formulas */
             width: "100%",
@@ -71,13 +71,13 @@ export default function AboutSection() {
           {/* Main editorial statement */}
           <p
             style={{
-              fontSize: "clamp(1.4rem, 5vw, 2.8rem)",
+              fontSize: "clamp(1.25rem, 4.5vw, 2.52rem)",
               fontWeight: 900,
               letterSpacing: "-0.03em",
               textTransform: "uppercase",
               lineHeight: 1.1,
               color: "#fff",
-              marginBottom: "2rem",
+              marginBottom: "1.75rem",
               position: "relative",
               zIndex: 1,
             }}
@@ -130,18 +130,18 @@ export default function AboutSection() {
                 <h3
                   style={{
                     fontWeight: 800,
-                    fontSize: "0.75rem",
+                    fontSize: "0.68rem",
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
                     color: "#FFD93D",
-                    marginBottom: "0.5rem",
+                    marginBottom: "0.45rem",
                   }}
                 >
                   {item.head}
                 </h3>
                 <p
                   style={{
-                    fontSize: "0.85rem",
+                    fontSize: "0.78rem",
                     fontWeight: 400,
                     color: "rgba(255,255,255,0.75)",
                     lineHeight: 1.65,

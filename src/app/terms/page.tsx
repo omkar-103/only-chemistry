@@ -59,8 +59,8 @@ export default function TermsPage() {
             <h2 className="text-xl font-display font-bold text-foreground">
               2. Eligibility
             </h2>
-            <p>
-              The Platform is designed for students preparing for competitive chemistry examinations (including JEE Main, JEE Advanced, GATE, MHT-CET, CSIR NET, UGC NET, and SET). By creating an account, you represent that you are at least 13 years of age, or possess legal parental/guardian consent if under the age of majority in your jurisdiction.
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              The Platform is designed for students preparing for competitive chemistry examinations (including JEE Main, JEE Advanced, GATE, MHT-CET, IIT JAM, NET, and SET). By creating an account, you represent that you are at least 13 years of age, or possess legal parental/guardian consent if under the age of majority in your jurisdiction.
             </p>
           </section>
 

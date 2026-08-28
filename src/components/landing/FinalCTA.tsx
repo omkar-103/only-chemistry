@@ -17,7 +17,7 @@ export default function FinalCTA() {
         background: "#FFD93D",
         borderTop: "4px solid #000",
         borderBottom: "4px solid #000",
-        padding: "4rem 0",
+        padding: "3.5rem 0",
         fontFamily: "var(--font-neo)",
         position: "relative",
         overflow: "hidden",
@@ -69,19 +69,19 @@ export default function FinalCTA() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "0.4rem",
-              border: "3px solid #000",
+              gap: "0.35rem",
+              border: "2px solid #000",
               borderRadius: "9999px",
               background: "#000",
               color: "#FFD93D",
               fontFamily: "var(--font-neo)",
               fontWeight: 700,
-              fontSize: "0.65rem",
+              fontSize: "0.6rem",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              padding: "0.3rem 0.75rem",
+              padding: "0.25rem 0.65rem",
               boxShadow: "2px 2px 0 #000",
-              marginBottom: "1rem",
+              marginBottom: "0.9rem",
             }}
           >
             🚀 Ready to begin?
@@ -90,13 +90,13 @@ export default function FinalCTA() {
           {/* Headline */}
           <h2
             style={{
-              fontSize: "clamp(2rem, 8vw, 6rem)",
+              fontSize: "clamp(1.8rem, 7.2vw, 5.4rem)",
               fontWeight: 900,
               letterSpacing: "-0.04em",
               textTransform: "uppercase",
               lineHeight: 0.95,
               color: "#000",
-              marginBottom: "1.25rem",
+              marginBottom: "1.1rem",
             }}
           >
             <span style={{ display: "block" }}>Ready to Master</span>
@@ -118,7 +118,7 @@ export default function FinalCTA() {
                 key={line}
                 style={{
                   fontWeight: 700,
-                  fontSize: "clamp(0.85rem, 2vw, 1rem)",
+                  fontSize: "clamp(0.78rem, 2vw, 0.9rem)",
                   letterSpacing: "0.03em",
                   color: "#000",
                   whiteSpace: "nowrap",
@@ -144,12 +144,12 @@ export default function FinalCTA() {
               justify-content: center;
               font-family: var(--font-neo);
               font-weight: 700;
-              font-size: clamp(0.8rem, 2vw, 1rem);
+              font-size: clamp(0.72rem, 2vw, 0.9rem);
               letter-spacing: 0.05em;
               text-transform: uppercase;
-              border: 4px solid #000;
-              box-shadow: 4px 4px 0 #000;
-              padding: 12px 24px;
+              border: 3px solid #000;
+              box-shadow: 3px 3px 0 #000;
+              padding: 10px 20px;
               text-decoration: none;
               cursor: pointer;
               transition: transform 100ms, box-shadow 100ms;

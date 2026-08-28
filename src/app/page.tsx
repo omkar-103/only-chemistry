@@ -17,7 +17,7 @@ import Footer from "@/components/landing/Footer";
 export const metadata: Metadata = {
   title: "Only Chemistry — Master Chemistry. Ace Every Exam.",
   description:
-    "India's premier chemistry education platform. Professional exam preparation for JEE Main, JEE Advanced, GATE, MHT-CET, CSIR NET, UGC NET and SET.",
+    "India's premier chemistry education platform. Professional exam preparation for JEE Main, JEE Advanced, GATE, MHT-CET, IIT JAM, NET and SET.",
 };
 
 export default function HomePage() {

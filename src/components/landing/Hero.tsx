@@ -19,7 +19,7 @@ import { ROUTES } from "@/constants";
 import HeroChemistryVisual from "./HeroChemistryVisual";
 import StatsStrip from "./StatsStrip";
 
-const EXAMS = ["JEE Main", "JEE Advanced", "GATE", "MHT-CET", "CSIR NET", "UGC NET", "SET"];
+const EXAMS = ["JEE Main", "JEE Advanced", "GATE", "MHT-CET", "IIT JAM", "NET", "SET"];
 
 export default function Hero() {
   return (
@@ -27,7 +27,7 @@ export default function Hero() {
       className="neo-grid-bg hero-section"
       style={{
         paddingTop: "0.5rem",
-        paddingBottom: "2.5rem",
+        paddingBottom: "2.25rem",
         borderBottom: "4px solid #000",
         fontFamily: "var(--font-neo)",
         width: "100%",
@@ -44,10 +44,10 @@ export default function Hero() {
         .hero-inner {
           max-width: 88rem;
           margin: 0 auto;
-          padding: 0 1.25rem;
+          padding: 0 1.1rem;
           display: grid;
           grid-template-columns: 1fr;
-          gap: 2rem;
+          gap: 1.75rem;
           align-items: center;
           width: 100%;
           box-sizing: border-box;
@@ -57,9 +57,9 @@ export default function Hero() {
         }
         @media (min-width: 1024px) {
           .hero-inner {
-            grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-            gap: 2.5rem;
-            min-height: calc(100vh - 64px);
+            grid-template-columns: minmax(0, 1.15fr) minmax(290px, 0.85fr);
+            gap: 2.25rem;
+            min-height: calc(100vh - 58px);
           }
           .hero-visual-desktop {
             display: block;
@@ -71,7 +71,7 @@ export default function Hero() {
         @media (min-width: 768px) and (max-width: 1023px) {
           .hero-inner {
             grid-template-columns: 1fr;
-            max-width: 640px;
+            max-width: 580px;
           }
         }
       `}</style>
@@ -89,12 +89,12 @@ export default function Hero() {
           {/* Hero headline — block spans for controlled line breaks */}
           <h1
             style={{
-              fontSize: "clamp(38px, 10vw, 110px)",
+              fontSize: "clamp(34px, 9vw, 99px)",
               fontWeight: 900,
               lineHeight: 0.95,
               letterSpacing: "-0.04em",
               textTransform: "uppercase",
-              marginBottom: "1rem",
+              marginBottom: "0.9rem",
               color: "#000",
               wordBreak: "keep-all",
               overflowWrap: "normal",
@@ -106,9 +106,9 @@ export default function Hero() {
               style={{
                 display: "inline-block",
                 background: "#FFD93D",
-                border: "4px solid #000",
-                boxShadow: "5px 5px 0 #000",
-                padding: "0 10px",
+                border: "3px solid #000",
+                boxShadow: "4px 4px 0 #000",
+                padding: "0 9px",
                 marginTop: "0.1em",
                 lineHeight: 1.05,
               }}
@@ -121,11 +121,11 @@ export default function Hero() {
           {/* Supporting copy */}
           <p
             style={{
-              fontSize: "0.9rem",
+              fontSize: "0.82rem",
               fontWeight: 500,
               color: "#333",
               lineHeight: 1.6,
-              marginBottom: "0.75rem",
+              marginBottom: "0.65rem",
               maxWidth: "100%",
             }}
           >
@@ -137,8 +137,8 @@ export default function Hero() {
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: "0.4rem",
-              marginBottom: "1.5rem",
+              gap: "0.35rem",
+              marginBottom: "1.35rem",
               maxWidth: "100%",
             }}
           >
@@ -149,10 +149,10 @@ export default function Hero() {
                   border: "2px solid #000",
                   background: "#fff",
                   fontWeight: 700,
-                  fontSize: "0.7rem",
+                  fontSize: "0.65rem",
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
-                  padding: "3px 8px",
+                  padding: "2px 7px",
                   boxShadow: "2px 2px 0 #000",
                   whiteSpace: "nowrap",
                 }}
@@ -166,9 +166,9 @@ export default function Hero() {
           <div
             style={{
               display: "flex",
-              gap: "0.75rem",
+              gap: "0.65rem",
               flexWrap: "wrap",
-              marginBottom: "1.5rem",
+              marginBottom: "1.35rem",
               maxWidth: "100%",
             }}
           >
@@ -180,14 +180,14 @@ export default function Hero() {
                 justifyContent: "center",
                 fontFamily: "var(--font-neo)",
                 fontWeight: 700,
-                fontSize: "0.85rem",
+                fontSize: "0.78rem",
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
                 background: "#FFD93D",
                 color: "#000",
-                border: "4px solid #000",
+                border: "3px solid #000",
                 boxShadow: "4px 4px 0 #000",
-                padding: "10px 20px",
+                padding: "9px 18px",
                 textDecoration: "none",
                 transition: "transform 100ms, box-shadow 100ms",
                 whiteSpace: "nowrap",
@@ -212,14 +212,14 @@ export default function Hero() {
                 justifyContent: "center",
                 fontFamily: "var(--font-neo)",
                 fontWeight: 700,
-                fontSize: "0.85rem",
+                fontSize: "0.78rem",
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
                 background: "#fff",
                 color: "#000",
-                border: "4px solid #000",
+                border: "3px solid #000",
                 boxShadow: "4px 4px 0 #000",
-                padding: "10px 20px",
+                padding: "9px 18px",
                 textDecoration: "none",
                 transition: "transform 100ms, box-shadow 100ms",
                 whiteSpace: "nowrap",
@@ -245,13 +245,13 @@ export default function Hero() {
           <div
             className="hero-visual-mobile"
             style={{
-              marginTop: "1.5rem",
-              border: "4px solid #000",
-              boxShadow: "6px 6px 0 #000",
+              marginTop: "1.35rem",
+              border: "3px solid #000",
+              boxShadow: "5px 5px 0 #000",
               background: "#FFFDF5",
               aspectRatio: "420 / 520",
               width: "100%",
-              maxWidth: "420px",
+              maxWidth: "380px",
               overflow: "hidden",
               position: "relative",
             }}
@@ -267,8 +267,8 @@ export default function Hero() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45, ease: "easeOut", delay: 0.1 }}
           style={{
-            border: "4px solid #000",
-            boxShadow: "10px 10px 0 #000",
+            border: "3px solid #000",
+            boxShadow: "9px 9px 0 #000",
             background: "#FFFDF5",
             position: "relative",
             overflow: "hidden",

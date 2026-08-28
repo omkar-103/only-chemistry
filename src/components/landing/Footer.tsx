@@ -17,8 +17,8 @@ const FOOTER_COLS = [
       { label: "JEE Advanced", href: `${ROUTES.STUDENT.EXAMS}?category=JEE%20Advanced` },
       { label: "GATE",         href: `${ROUTES.STUDENT.EXAMS}?category=GATE` },
       { label: "MHT-CET",      href: `${ROUTES.STUDENT.EXAMS}?category=MHT-CET` },
-      { label: "CSIR NET",     href: `${ROUTES.STUDENT.EXAMS}?category=CSIR%20NET` },
-      { label: "UGC NET",      href: `${ROUTES.STUDENT.EXAMS}?category=UGC%20NET` },
+      { label: "IIT JAM",      href: `${ROUTES.STUDENT.EXAMS}?category=IIT%20JAM` },
+      { label: "NET",          href: `${ROUTES.STUDENT.EXAMS}?category=NET` },
     ],
   },
   {
@@ -47,7 +47,7 @@ export default function Footer() {
         background: "#000",
         borderTop: "4px solid #FFD93D",
         fontFamily: "var(--font-neo)",
-        padding: "3rem 0 1.75rem",
+        padding: "2.7rem 0 1.5rem",
         width: "100%",
       }}
     >
@@ -98,12 +98,12 @@ export default function Footer() {
                   flexShrink: 0,
                 }}
               >
-                <FlaskConical size={18} color="#000" strokeWidth={2.5} />
+                <FlaskConical size={16} color="#000" strokeWidth={2.5} />
               </div>
               <span
                 style={{
                   fontWeight: 900,
-                  fontSize: "1rem",
+                  fontSize: "0.9rem",
                   color: "#fff",
                   letterSpacing: "-0.02em",
                   whiteSpace: "nowrap",
@@ -114,10 +114,10 @@ export default function Footer() {
             </Link>
             <p
               style={{
-                fontSize: "0.78rem",
+                fontSize: "0.72rem",
                 color: "rgba(255,255,255,0.45)",
                 lineHeight: 1.65,
-                maxWidth: 240,
+                maxWidth: 220,
               }}
             >
               India&apos;s premier chemistry education platform. Expert preparation for JEE, GATE, NET &amp; more.
@@ -130,11 +130,11 @@ export default function Footer() {
               <h4
                 style={{
                   fontWeight: 800,
-                  fontSize: "0.65rem",
+                  fontSize: "0.58rem",
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
                   color: "#FFD93D",
-                  marginBottom: "0.75rem",
+                  marginBottom: "0.65rem",
                 }}
               >
                 {col.heading}
@@ -154,7 +154,7 @@ export default function Footer() {
                     <Link
                       href={link.href}
                       style={{
-                        fontSize: "0.8rem",
+                        fontSize: "0.73rem",
                         fontWeight: 500,
                         color: "rgba(255,255,255,0.55)",
                         textDecoration: "none",
@@ -184,10 +184,10 @@ export default function Footer() {
             gap: "0.5rem",
           }}
         >
-          <p style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.3)", margin: 0 }}>
+          <p style={{ fontSize: "0.63rem", color: "rgba(255,255,255,0.3)", margin: 0 }}>
             © {new Date().getFullYear()} Only Chemistry. All rights reserved.
           </p>
-          <p style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.2)", margin: 0 }}>
+          <p style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.2)", margin: 0 }}>
             Website created by Omkar Parelkar.
           </p>
         </div>
