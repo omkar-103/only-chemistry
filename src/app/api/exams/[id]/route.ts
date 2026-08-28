@@ -1,11 +1,9 @@
-// GET /api/exams/[id] — Get exam details
-// PUT /api/exams/[id] — Update exam (admin)
-// DELETE /api/exams/[id] — Delete exam (admin)
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db/connection";
 import Exam from "@/lib/db/models/Exam";
 import User from "@/lib/db/models/User";
 import { requireAuth, requireAdmin, successResponse, errorResponse } from "@/lib/api/utils";
+import { checkExamAccess, logExamAccess } from "@/lib/auth/accessControl";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -27,18 +25,32 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return errorResponse("Exam not found", 404);
     }
 
-    // For students — hide correct answers from questions
+    // Access control check for students
     if (authResult.user.role === "student") {
-      const student = await User.findById(authResult.user.userId).lean();
-      const isPurchased =
-        exam.isFree ||
-        student?.purchasedExams?.some(
-          (p) => p.toString() === id
-        );
+      const student = await User.findById(authResult.user.userId)
+        .select("name email assignedExams assignedCategories purchasedExams")
+        .lean();
+
+      const accessResult = checkExamAccess(
+        {
+          role: "student",
+          assignedExams: student?.assignedExams,
+          assignedCategories: student?.assignedCategories,
+          purchasedExams: student?.purchasedExams,
+        },
+        exam
+      );
+
+      logExamAccess(student?.email || authResult.user.email, id, accessResult);
+
+      if (!accessResult.hasAccess) {
+        return errorResponse("You do not have access to this exam.", 403);
+      }
 
       const sanitizedExam = {
         ...exam,
-        isPurchased,
+        isPurchased: true,
+        hasAccess: true,
         // Don't expose questions until exam starts
         questions: undefined,
         questionCount: exam.questions.length,
@@ -61,6 +73,13 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     const body = await req.json();
     await connectDB();
+
+    if (body.accessType === "free") {
+      body.isFree = true;
+      body.price = 0;
+    } else if (body.accessType === "restricted") {
+      body.isFree = false;
+    }
 
     const exam = await Exam.findByIdAndUpdate(
       id,

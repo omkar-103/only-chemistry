@@ -60,11 +60,35 @@ export const resetPasswordSchema = z.object({
 
 // ── Exam Schemas ──────────────────────────────────────────────
 
-const questionOptionSchema = z.object({
-  id: z.string(),
-  text: z.string().min(1, "Option text is required"),
-  image: z.string().optional(),
-});
+// ChemDraw chemical content sub-schema for Zod
+const chemicalContentZodSchema = z.object({
+  type: z.string().default("chemical-structure"),
+  sourceFormat: z.string().default("cdxml"),
+  sourceData: z.string().optional(),
+  renderedFormat: z.enum(["svg", "png"]),
+  renderedUrl: z.string().min(1),
+  renderedPublicId: z.string().optional(),
+  altText: z.string().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+}).optional();
+
+const questionOptionSchema = z
+  .object({
+    id: z.string(),
+    text: z.string().optional().default(""),
+    image: z.string().optional(),
+    chemicalContent: chemicalContentZodSchema,
+  })
+  .refine(
+    (opt) => {
+      const hasText = typeof opt.text === "string" && opt.text.trim().length > 0;
+      const hasChem = !!(opt.chemicalContent?.renderedUrl);
+      const hasImage = typeof opt.image === "string" && opt.image.length > 0;
+      return hasText || hasChem || hasImage;
+    },
+    { message: "Each option must have text, a chemical structure, or an image" }
+  );
 
 export const questionSchema = z.object({
   questionText: z.string().min(1, "Question text is required"),
@@ -80,26 +104,39 @@ export const questionSchema = z.object({
   order: z.number().min(0),
 });
 
-export const examStep1Schema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(200),
-  description: z.string().min(10, "Description must be at least 10 characters").max(2000),
-  category: z.string().min(1, "Category is required"),
-  subject: z.string().min(1, "Subject is required"),
-  difficulty: z.enum(["easy", "medium", "hard"]),
-  thumbnail: z.string().optional(),
-  isFree: z.boolean(),
-  price: z.number().min(0).default(0),
-  passingPercentage: z.number().min(0).max(100).default(40),
-  negativeMarkingEnabled: z.boolean().default(false),
-  maxAttempts: z.number().min(1).default(1),
-  resultVisibility: z.enum(["hidden", "score_only", "full"]).default("score_only"),
-  showExplanations: z.boolean().default(false),
-  allowReattempt: z.boolean().default(false),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  // status is set by the admin when they click Save Draft / Publish
-  status: z.enum(["draft", "published", "archived"]).default("draft"),
-});
+export const examStep1Schema = z
+  .object({
+    title: z.string().min(3, "Title must be at least 3 characters").max(200),
+    description: z.string().min(10, "Description must be at least 10 characters").max(2000),
+    category: z.string().min(1, "Category is required"),
+    subject: z.string().min(1, "Subject is required"),
+    difficulty: z.enum(["easy", "medium", "hard"]),
+    thumbnail: z.string().optional(),
+    accessType: z.enum(["free", "restricted"]).default("free"),
+    visibleTo: z.array(z.string()).default([]),
+    isFree: z.boolean().default(true),
+    price: z.number().min(0).default(0),
+    passingPercentage: z.number().min(0).max(100).default(40),
+    negativeMarkingEnabled: z.boolean().default(false),
+    maxAttempts: z.number().min(1).default(1),
+    resultVisibility: z.enum(["hidden", "score_only", "full"]).default("score_only"),
+    showExplanations: z.boolean().default(false),
+    allowReattempt: z.boolean().default(false),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    // status is set by the admin when they click Save Draft / Publish
+    status: z.enum(["draft", "published", "archived"]).default("draft"),
+  })
+  .refine(
+    (data) =>
+      data.accessType !== "restricted" ||
+      (Array.isArray(data.visibleTo) && data.visibleTo.length > 0),
+    {
+      message:
+        "Please select at least one exam category in 'Visible To' for a restricted exam",
+      path: ["visibleTo"],
+    }
+  );
 
 export const examStep2Schema = z.object({
   totalDuration: z.number().min(1, "Duration must be at least 1 minute"),

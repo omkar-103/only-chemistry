@@ -1,14 +1,15 @@
-// GET /api/exams — List exams with filters
-// POST /api/exams — Create exam (admin)
 import { NextRequest } from "next/server";
 import connectDB from "@/lib/db/connection";
 import Exam from "@/lib/db/models/Exam";
+import User from "@/lib/db/models/User";
 import {
   requireAuth, requireAdmin, successResponse, errorResponse,
   paginatedResponse, parsePagination,
 } from "@/lib/api/utils";
 import { examStep1Schema, examStep2Schema } from "@/lib/validators/schemas";
 import { NextResponse } from "next/server";
+import { slugifyCategory } from "@/lib/db/ensureCategories";
+import { CANONICAL_CATEGORIES } from "@/constants";
 
 export async function GET(req: NextRequest) {
   const authResult = await requireAuth(req);
@@ -30,6 +31,57 @@ export async function GET(req: NextRequest) {
     if (authResult.user.role === "student") {
       // Students only ever see published exams
       query.status = "published";
+
+      const student = await User.findById(authResult.user.userId)
+        .select("assignedExams assignedCategories purchasedExams")
+        .lean();
+
+      const rawAssigned = Array.from(
+        new Set([
+          ...(student?.assignedExams || []),
+          ...(student?.assignedCategories || []),
+        ])
+      );
+
+      const assignedTokens: string[] = [];
+      rawAssigned.forEach((c) => {
+        assignedTokens.push(c);
+        const slug = slugifyCategory(c);
+        if (slug && !assignedTokens.includes(slug)) assignedTokens.push(slug);
+        const matched = CANONICAL_CATEGORIES.find(
+          (cat) => cat.slug === slug || cat.name.toLowerCase() === c.toLowerCase()
+        );
+        if (matched && !assignedTokens.includes(matched.name)) {
+          assignedTokens.push(matched.name);
+        }
+      });
+
+      // Student access filter:
+      // An exam is visible to the student if:
+      // 1. accessType is "free" OR isFree is true
+      // 2. OR (accessType is "restricted" / !isFree) AND (visibleTo intersects assigned OR category in assigned OR exam._id in purchasedExams)
+      const accessFilters: Record<string, unknown>[] = [
+        { accessType: "free" },
+        { isFree: true, accessType: { $ne: "restricted" } },
+      ];
+
+      if (assignedTokens.length > 0) {
+        accessFilters.push({
+          visibleTo: { $in: assignedTokens },
+        });
+        accessFilters.push({
+          category: { $in: assignedTokens },
+          $or: [{ visibleTo: { $exists: false } }, { visibleTo: { $size: 0 } }],
+        });
+      }
+
+      if (student?.purchasedExams && student.purchasedExams.length > 0) {
+        accessFilters.push({
+          _id: { $in: student.purchasedExams },
+        });
+      }
+
+      query.$or = accessFilters;
     } else {
       // Admins: apply status filter only when explicitly set to a real value
       const status = searchParams.get("status");
@@ -48,11 +100,15 @@ export async function GET(req: NextRequest) {
 
     if (search) {
       // Use regex search instead of $text so we don't need text indexes to be ready
-      query.$or = [
-        { title:       { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { subject:     { $regex: search, $options: "i" } },
-        { category:    { $regex: search, $options: "i" } },
+      query.$and = [
+        {
+          $or: [
+            { title:       { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+            { subject:     { $regex: search, $options: "i" } },
+            { category:    { $regex: search, $options: "i" } },
+          ],
+        },
       ];
     }
 
@@ -81,7 +137,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("[EXAMS POST] Creating exam:", body.title, "status:", body.status);
 
-    // Validate step 1 (includes status now)
+    // Validate step 1 (includes accessType, visibleTo, status)
     const step1 = examStep1Schema.safeParse(body);
     if (!step1.success) {
       console.error("[EXAMS POST] Step1 validation failed:", step1.error.issues);
@@ -97,10 +153,29 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
+    const isFreeExam = step1.data.accessType === "free";
+    const questionsPayload = Array.isArray(body.questions) ? body.questions : [];
+
+    // Detailed debug logs requested for question options validation
+    questionsPayload.forEach((q: any, qIdx: number) => {
+      console.log(`[EXAMS DEBUG] Question ${qIdx + 1}`);
+      if (Array.isArray(q.options)) {
+        q.options.forEach((opt: any) => {
+          const hasText = typeof opt.text === "string" && opt.text.trim().length > 0;
+          const hasChem = !!(opt.chemicalContent && (opt.chemicalContent.renderedUrl || opt.chemicalContent.sourceData));
+          console.log(
+            `[EXAMS DEBUG] Option ${opt.id} → text: ${hasText ? "PRESENT" : "EMPTY"}, chemicalStructure: ${hasChem ? "PRESENT" : "ABSENT"}`
+          );
+        });
+      }
+    });
+
     const exam = await Exam.create({
-      ...step1.data,   // includes status from frontend
+      ...step1.data,
+      isFree: isFreeExam,
+      price: isFreeExam ? 0 : step1.data.price,
       ...step2.data,
-      questions:  body.questions || [],
+      questions:  questionsPayload,
       createdBy:  authResult.user.userId,
     });
 

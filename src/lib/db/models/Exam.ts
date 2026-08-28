@@ -2,17 +2,39 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IOptionDocument {
   id: string;
-  text: string;
+  text?: string;   // optional — option may contain chemicalContent instead of text
   image?: string;
+  chemicalContent?: {
+    type: "chemical-structure";
+    sourceFormat: string;
+    sourceData?: string;
+    renderedFormat: string;
+    renderedUrl: string;
+    renderedPublicId?: string;
+    altText?: string;
+    width?: number;
+    height?: number;
+  };
 }
 
 export interface IQuestionDocument {
   _id: mongoose.Types.ObjectId;
   questionText: string;
   questionImage?: string;
+  questionChemicalContents?: Array<{
+    type: "chemical-structure";
+    sourceFormat: string;
+    sourceData?: string;
+    renderedFormat: string;
+    renderedUrl: string;
+    renderedPublicId?: string;
+    altText?: string;
+    width?: number;
+    height?: number;
+  }>;
   questionType: "single" | "multiple" | "truefalse";
   options: IOptionDocument[];
-  correctAnswers: string[]; // option ids
+  correctAnswers: string[];
   marks: number;
   negativeMarks: number;
   explanation?: string;
@@ -28,6 +50,8 @@ export interface IExamDocument extends Document {
   subject: string;
   difficulty: "easy" | "medium" | "hard";
   thumbnail?: string;
+  accessType: "free" | "restricted";
+  visibleTo: string[];
   isFree: boolean;
   price: number; // in paise (0 for free)
   status: "draft" | "published" | "archived";
@@ -50,32 +74,51 @@ export interface IExamDocument extends Document {
   updatedAt: Date;
 }
 
+// ── ChemicalContent sub-schema ──────────────────────────────────────────────────────
+const ChemicalContentSchema = new Schema(
+  {
+    type:              { type: String, default: "chemical-structure" },
+    sourceFormat:      { type: String, enum: ["cdxml", "svg-only", "png-only", "unknown"], default: "cdxml" },
+    sourceData:        { type: String },   // original CDXML text — canonical source
+    renderedFormat:    { type: String, enum: ["svg", "png"], required: true },
+    renderedUrl:       { type: String, required: true },  // Cloudinary URL
+    renderedPublicId:  { type: String },
+    altText:           { type: String },
+    width:             { type: Number },
+    height:            { type: Number },
+  },
+  { _id: false }
+);
+
 const OptionSchema = new Schema<IOptionDocument>(
   {
-    id: { type: String, required: true },
-    text: { type: String, required: true },
-    image: String,
+    id:              { type: String, required: true },
+    // text is intentionally NOT required — options may contain a chemical structure without text
+    text:            { type: String, default: "" },
+    image:           String,
+    chemicalContent: { type: ChemicalContentSchema, required: false },
   },
   { _id: false }
 );
 
 const QuestionSchema = new Schema<IQuestionDocument>(
   {
-    questionText: { type: String, required: [true, "Question text is required"] },
-    questionImage: String,
+    questionText:              { type: String, required: [true, "Question text is required"] },
+    questionImage:             String,
+    questionChemicalContents:  { type: [ChemicalContentSchema], default: [] },
     questionType: {
       type: String,
       enum: ["single", "multiple", "truefalse"],
       default: "single",
     },
-    options: { type: [OptionSchema], required: true },
-    correctAnswers: { type: [String], required: true },
-    marks: { type: Number, required: true, default: 1, min: 0 },
-    negativeMarks: { type: Number, default: 0, min: 0 },
-    explanation: String,
+    options:         { type: [OptionSchema], required: true },
+    correctAnswers:  { type: [String], required: true },
+    marks:           { type: Number, required: true, default: 1, min: 0 },
+    negativeMarks:   { type: Number, default: 0, min: 0 },
+    explanation:     String,
     explanationImage: String,
     timeLimitSeconds: { type: Number, min: 0 },
-    order: { type: Number, required: true },
+    order:           { type: Number, required: true },
   },
   { _id: true }
 );
@@ -108,6 +151,15 @@ const ExamSchema = new Schema<IExamDocument>(
       default: "medium",
     },
     thumbnail: String,
+    accessType: {
+      type: String,
+      enum: ["free", "restricted"],
+      default: "free",
+    },
+    visibleTo: {
+      type: [String],
+      default: [],
+    },
     isFree: { type: Boolean, default: true },
     price: { type: Number, default: 0, min: 0 },
     status: {
@@ -151,6 +203,8 @@ const ExamSchema = new Schema<IExamDocument>(
 
 // ── Indexes ───────────────────────────────────────────────────
 ExamSchema.index({ category: 1, status: 1 });
+ExamSchema.index({ accessType: 1, status: 1 });
+ExamSchema.index({ visibleTo: 1 });
 ExamSchema.index({ status: 1 });
 ExamSchema.index({ isFree: 1 });
 ExamSchema.index({ createdAt: -1 });
@@ -161,7 +215,11 @@ ExamSchema.virtual("questionCount").get(function () {
   return this.questions.length;
 });
 
-const Exam: Model<IExamDocument> =
-  mongoose.models.Exam || mongoose.model<IExamDocument>("Exam", ExamSchema);
+// ── Ensure fresh model registration across Next.js reloads ────
+if (mongoose.models && mongoose.models.Exam) {
+  delete mongoose.models.Exam;
+}
+
+const Exam: Model<IExamDocument> = mongoose.model<IExamDocument>("Exam", ExamSchema);
 
 export default Exam;

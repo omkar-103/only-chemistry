@@ -67,6 +67,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
               _id: q._id,
               questionText: q.questionText,
               questionImage: q.questionImage,
+              questionChemicalContents: q.questionChemicalContents,
               questionType: q.questionType,
               options: q.options,
               correctAnswers: q.correctAnswers,

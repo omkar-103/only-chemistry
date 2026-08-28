@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // Only Chemistry Exam Portal â€” All TypeScript Types & Interfaces
 // ============================================================
 
@@ -19,16 +19,20 @@ export interface IUser {
   updatedAt: string;
   // Student-specific fields (present when role === "student")
   purchasedExams?: string[];
+  assignedExams?: string[];
   assignedCategories?: string[];
   totalTimeOnSite?: number;
   lastActive?: string;
+  lastActiveAt?: string;
 }
 
 export interface IStudentProfile extends IUser {
   purchasedExams: string[];
+  assignedExams: string[];
   assignedCategories: string[];
   totalTimeOnSite: number; // seconds
   lastActive?: string;
+  lastActiveAt?: string;
   currentSession?: string;
   deviceInfo?: {
     device: string;
@@ -67,8 +71,8 @@ export type ExamCategory =
   | "JEE Advanced"
   | "GATE"
   | "MHT-CET"
-  | "CSIR NET"
-  | "UGC NET"
+  | "IIT JAM"
+  | "NET"
   | "SET";
 
 export interface ICategory {
@@ -82,19 +86,41 @@ export interface ICategory {
   videoCount?: number;
 }
 
-// â”€â”€ Questions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Questions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── ChemDraw Chemical Content ─────────────────────────────────────────────────
+// Represents a piece of ChemDraw-created chemistry content attached to a
+// question or answer option. CDXML is the canonical source; SVG/PNG is the
+// display asset exported by ChemDraw itself (exact visual fidelity).
+export type ChemDrawSourceFormat = "cdxml" | "svg-only" | "png-only" | "unknown";
+export type ChemDrawRenderedFormat = "svg" | "png";
+
+export interface ChemicalContent {
+  type: "chemical-structure";
+  sourceFormat: ChemDrawSourceFormat;  // format of the source file
+  sourceData?: string;                  // original CDXML text (stored in MongoDB)
+  renderedFormat: ChemDrawRenderedFormat; // format of the display asset
+  renderedUrl: string;                  // Cloudinary CDN URL (SVG or PNG)
+  renderedPublicId?: string;            // Cloudinary public_id for deletion
+  altText?: string;
+  width?: number;
+  height?: number;
+}
+
+// ── Questions ────────────────────────────────────────────────────────────────
 export type QuestionType = "single" | "multiple" | "truefalse";
 
 export interface IOption {
   id: string;
-  text: string;
+  text?: string;             // optional — option may use chemicalContent instead
   image?: string;
+  chemicalContent?: ChemicalContent;  // ChemDraw content for this option
 }
 
 export interface IQuestion {
   _id?: string;
   questionText: string;
   questionImage?: string;
+  questionChemicalContents?: ChemicalContent[];  // array — question may have multiple structures
   questionType: QuestionType;
   options: IOption[];
   correctAnswers: string[]; // option ids
@@ -119,6 +145,8 @@ export interface IExam {
   subject: string;
   difficulty: DifficultyLevel;
   thumbnail?: string;
+  accessType?: "free" | "restricted";
+  visibleTo?: string[];
   isFree: boolean;
   price: number;
   status: ExamStatus;
@@ -355,6 +383,8 @@ export interface ExamStep1Data {
   subject: string;
   difficulty: DifficultyLevel;
   thumbnail?: string;
+  accessType?: "free" | "restricted";
+  visibleTo?: string[];
   isFree: boolean;
   price: number;
   passingPercentage: number;
