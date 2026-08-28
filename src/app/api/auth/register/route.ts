@@ -6,6 +6,7 @@ import { registerSchema } from "@/lib/validators/schemas";
 import { successResponse, errorResponse, rateLimit, getClientIP, createAuditLog } from "@/lib/api/utils";
 import { generateSecureOTP, storeOTP } from "@/lib/auth/otp";
 import { sendOTPEmail } from "@/lib/email/emailService";
+import { sendWelcomeEmail } from "@/lib/email/sendWelcomeEmail";
 import Notification from "@/lib/db/models/Notification";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
@@ -58,6 +59,14 @@ export async function POST(req: NextRequest) {
       password,
       isVerified: IS_DEV ? true : false,
     });
+
+    // ── Send welcome email — NON-BLOCKING ──────────────────────────
+    // Called only after MongoDB user creation succeeds.
+    // Failure to send does NOT fail or roll back registration.
+    sendWelcomeEmail(name, email).catch(() => {
+      // Already logged inside sendWelcomeEmail — safe to swallow here
+    });
+    // ──────────────────────────────────────────────────────────────
 
     if (!IS_DEV) {
       // Production: send OTP email
