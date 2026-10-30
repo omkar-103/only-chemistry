@@ -30,12 +30,16 @@ import {
 } from "@/lib/auth/jwt";
 import { parseUserAgent } from "@/lib/utils/userAgent";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   const ip = getClientIP(req);
+  console.log(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 1/10] Request received from IP: ${ip}`);
 
   // Rate-limit by IP — same window as regular login route
   const { allowed } = rateLimit(`google-login:${ip}`, 10, 15 * 60 * 1000);
   if (!allowed) {
+    console.warn(`[GOOGLE-AUTH-DIAGNOSTIC] Rate limit exceeded for IP: ${ip}`);
     return errorResponse(
       "Too many login attempts. Please wait 15 minutes.",
       429
@@ -47,25 +51,38 @@ export async function POST(req: NextRequest) {
     const { idToken } = body as { idToken?: string };
 
     if (!idToken || typeof idToken !== "string") {
+      console.warn("[GOOGLE-AUTH-DIAGNOSTIC] Missing or invalid idToken in request payload");
       return errorResponse("Firebase ID token is required.", 400);
     }
+
+    console.log(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 2/10] Firebase ID token extracted (tokenLength: ${idToken.length})`);
 
     // ── Step 1: Verify the Firebase ID token on the server ─────
     let firebaseUser;
     try {
       firebaseUser = await verifyFirebaseIdToken(idToken);
+      console.log(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 4/10] Firebase ID token successfully verified for UID: ${firebaseUser.uid.slice(0, 6)}...`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Token verification failed.";
-      console.error("[GOOGLE-LOGIN] Token verification failed:", msg);
+      const errName = err instanceof Error ? err.name : "VerificationError";
+      const errMsg = err instanceof Error ? err.message : "Token verification failed.";
+      console.error(`[GOOGLE-AUTH-DIAGNOSTIC] Token verification failed [${errName}]: ${errMsg}`);
       return errorResponse(
-        msg || "Google authentication failed. Please try signing in again.",
+        errMsg || "Google authentication failed. Please try signing in again.",
         401
       );
     }
 
-    await connectDB();
-
     const normalizedEmail = firebaseUser.email.toLowerCase().trim();
+    console.log(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 5/10] User email extracted: ${normalizedEmail}`);
+
+    try {
+      await connectDB();
+      console.log("[GOOGLE-AUTH-DIAGNOSTIC] [Stage 6/10] MongoDB connection established successfully");
+    } catch (dbErr) {
+      const err = dbErr as Error;
+      console.error("[GOOGLE-AUTH-DIAGNOSTIC] ❌ Database connection failed:", err.name, "-", err.message);
+      return errorResponse("Database connection error. Please try again shortly.", 503);
+    }
 
     // ── Step 2: Find the user in MongoDB by verified email ──────
     const user = await User.findOne({
@@ -77,7 +94,7 @@ export async function POST(req: NextRequest) {
     // Registration must be done manually via the /register page.
     if (!user) {
       console.warn(
-        `[GOOGLE-LOGIN] No MongoDB account found for verified email: ${normalizedEmail}`
+        `[GOOGLE-AUTH-DIAGNOSTIC] [Stage 7/10] No MongoDB account found for email: ${normalizedEmail}`
       );
       return errorResponse(
         "No account found. Please register first.",
@@ -85,8 +102,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 7/10] User located in database: ID = ${user._id.toString()}`);
+
     // Guard: inactive account
     if (!user.isActive) {
+      console.warn(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 8/10] Account is inactive: ${user._id}`);
       return errorResponse(
         "Your account has been suspended. Please contact support.",
         403
@@ -95,10 +115,10 @@ export async function POST(req: NextRequest) {
 
     // Guard: unverified account (if pending email verification)
     if (!user.isVerified) {
-      // Auto-verify if they signed in with verified Google email, or prompt verification
       user.isVerified = true;
       await user.save();
     }
+    console.log(`[GOOGLE-AUTH-DIAGNOSTIC] [Stage 8/10] User status verified (isActive: ${user.isActive}, isVerified: ${user.isVerified})`);
 
     // ── Step 4: Create session token (invalidates previous session) ─
     const sessionToken = generateSessionToken();
@@ -129,6 +149,7 @@ export async function POST(req: NextRequest) {
 
     const accessToken  = generateAccessToken(tokenPayload);
     const refreshToken = generateRefreshToken(tokenPayload);
+    console.log("[GOOGLE-AUTH-DIAGNOSTIC] [Stage 9/10] JWT session, access token, and refresh token generated");
 
     // ── Step 6: Audit log ─────────────────────────────────────────
     await createAuditLog({
@@ -183,9 +204,11 @@ export async function POST(req: NextRequest) {
     response.cookies.set("refresh_token", refreshToken, cookieOpts);
     response.cookies.set("access_token",  accessToken,  cookieOpts);
 
+    console.log("[GOOGLE-AUTH-DIAGNOSTIC] [Stage 10/10] Authentication successful, cookies set, returning HTTP 200");
     return response;
   } catch (error) {
-    console.error("[GOOGLE-LOGIN] Unexpected error:", (error as Error).message);
+    const err = error as Error;
+    console.error("[GOOGLE-AUTH-DIAGNOSTIC] ❌ Unexpected exception in Google auth flow:", err.name, "-", err.message);
     return errorResponse("Google login failed. Please try again.", 500);
   }
 }

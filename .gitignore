@@ -17,6 +17,7 @@
 /.next/
 /out/
 
+
 # production
 /build
 
@@ -57,3 +58,6 @@ Desktop.ini
 .development-log.md
 COMMITTED_VS_REMAINING.md
 
+
+# scratch / temp files
+/scratch/

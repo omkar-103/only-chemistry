@@ -77,7 +77,7 @@ export function DemoOverlay({
           {/* Demo badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-500/15 border border-gold-400/25 text-gold-300 text-[11px] font-semibold tracking-widest uppercase mb-6">
             <FlaskConical className="h-3 w-3" />
-            Demo Mode
+            
           </div>
 
           {/* Icon */}
